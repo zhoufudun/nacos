@@ -63,15 +63,16 @@ class RolesManagement extends React.Component {
   getRoles() {
     this.setState({ loading: true });
     const { pageNo, pageSize } = this.state;
-    let { username, role } = this.state;
+    let username = this.state.username;
+    let role = this.state.role;
     let search = 'accurate';
 
     if (this.state.defaultFuzzySearch) {
       if (username && username !== '') {
-        username = `*${username}*`;
+        username = '*' + username + '*';
       }
       if (role && role !== '') {
-        role = `*${role}*`;
+        role = '*' + role + '*';
       }
     }
     if (role && role.indexOf('*') !== -1) {
@@ -131,24 +132,20 @@ class RolesManagement extends React.Component {
               }}
             />
           </Form.Item>
-          <Form.Item label={locale.fuzzydMode}>
+          <Form.Item label="默认模糊匹配">
             <Switch
               checkedChildren=""
               unCheckedChildren=""
               defaultChecked={this.state.defaultFuzzySearch}
               onChange={this.handleDefaultFuzzySwitchChange}
-              title={locale.fuzzyd}
+              title={'自动在搜索参数前后加上*'}
             />
           </Form.Item>
           <Form.Item label={''}>
             <Button
               type={'primary'}
               style={{ marginRight: 10 }}
-              onClick={() => {
-                this.setState({ pageNo: 1 }, () => {
-                  this.getRoles();
-                });
-              }}
+              onClick={() => this.getRoles()}
               data-spm-click={'gostr=/aliyun;locaid=dashsearch'}
             >
               {locale.query}

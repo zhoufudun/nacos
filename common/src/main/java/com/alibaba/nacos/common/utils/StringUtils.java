@@ -36,9 +36,6 @@ import java.util.StringTokenizer;
  * @author zzq
  */
 public class StringUtils {
-
-    private StringUtils() {
-    }
     
     public static final String DOT = ".";
     
@@ -127,29 +124,6 @@ public class StringUtils {
      */
     public static String defaultIfEmpty(String str, String defaultStr) {
         return isEmpty(str) ? defaultStr : str;
-    }
-    
-    /**
-     * <p>Returns either the passed in CharSequence, or if the CharSequence is
-     * empty or {@code null} or whitespace only, the value of {@code defaultStr}.</p>
-     *
-     * @param str        the CharSequence to check, may be null, may be whitespace only
-     * @param defaultStr the default CharSequence to return if the input is empty ("") or {@code null}, may be null
-     * @return the passed in CharSequence, or the default
-     */
-    public static String defaultIfBlank(String str, String defaultStr) {
-        return isBlank(str) ? defaultStr : str;
-    }
-    
-    /**
-     * <p>Returns either the passed in CharSequence, or if the CharSequence is
-     * empty or {@code null} or whitespace only, the value of {@code EmptyString}.</p>
-     *
-     * @param str the CharSequence to check, may be null, may be whitespace only
-     * @return the passed in CharSequence, or the empty string
-     */
-    public static String defaultEmptyIfBlank(String str) {
-        return defaultIfBlank(str, EMPTY);
     }
     
     /**
@@ -423,7 +397,7 @@ public class StringUtils {
         }
         if (ignoreCase) {
             String lowerCaseStr = str.toString().toLowerCase();
-            String lowerCasePrefix = prefix.toString().toLowerCase();
+            String lowerCasePrefix = str.toString().toLowerCase();
             return lowerCaseStr.startsWith(lowerCasePrefix);
         } else {
             return str.toString().startsWith(prefix.toString());
@@ -565,7 +539,7 @@ public class StringUtils {
      * {@code String} is not {@code null}, its length is greater than 0, and it contains at least one non-whitespace
      * character.
      *
-     * @param str the {@code String} to check (maybe {@code null})
+     * @param str the {@code String} to check (may be {@code null})
      * @return {@code true} if the {@code String} is not {@code null}, its length is greater than 0, and it does not
      * contain whitespace only
      * @see Character#isWhitespace
@@ -721,7 +695,7 @@ public class StringUtils {
      * <p>Note: this method returns {@code true} for a {@code String} that
      * purely consists of whitespace.
      *
-     * @param str the {@code String} to check (maybe {@code null})
+     * @param str the {@code String} to check (may be {@code null})
      * @return {@code true} if the {@code String} is not {@code null} and has length
      * @see #hasText(String)
      */
@@ -733,7 +707,7 @@ public class StringUtils {
      * Take a {@code String} that is a delimited list and convert it into a {@code String} array.
      *
      * <p>A single {@code delimiter} may consist of more than one character,
-     * but it will still be considered as a single delimiter string, rather than as a bunch of potential delimiter
+     * but it will still be considered as a single delimiter string, rather than as bunch of potential delimiter
      * characters, in contrast to {@link #tokenizeToStringArray}.
      *
      * @param str       the input {@code String} (potentially {@code null} or empty)
@@ -750,7 +724,7 @@ public class StringUtils {
      * Take a {@code String} that is a delimited list and convert it into a {@code String} array.
      *
      * <p>A single {@code delimiter} may consist of more than one character,
-     * but it will still be considered as a single delimiter string, rather than as a bunch of potential delimiter
+     * but it will still be considered as a single delimiter string, rather than as bunch of potential delimiter
      * characters, in contrast to {@link #tokenizeToStringArray}.
      *
      * @param str           the input {@code String} (potentially {@code null} or empty)
@@ -876,9 +850,9 @@ public class StringUtils {
     }
     
     /**
-     * Extract the filename from the given Java resource path, e.g. {@code "myPath/myFile.txt" &rarr; "myFile.txt"}.
+     * Extract the filename from the given Java resource path, e.g. {@code "mypath/myfile.txt" &rarr; "myfile.txt"}.
      *
-     * @param path the file path (maybe {@code null})
+     * @param path the file path (may be {@code null})
      * @return the extracted filename, or {@code null} if none
      */
     

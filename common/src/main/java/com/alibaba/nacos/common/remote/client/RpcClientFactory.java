@@ -74,19 +74,7 @@ public class RpcClientFactory {
     public static RpcClient createClient(String clientName, ConnectionType connectionType, Map<String, String> labels) {
         return createClient(clientName, connectionType, null, null, labels);
     }
-
-    public static RpcClient createClient(String clientName, ConnectionType connectionType, Map<String, String> labels,
-                                         RpcClientTlsConfig tlsConfig) {
-        return createClient(clientName, connectionType, null, null, labels, tlsConfig);
-
-    }
-
-    public static RpcClient createClient(String clientName, ConnectionType connectionType, Integer
-            threadPoolCoreSize,
-                                         Integer threadPoolMaxSize, Map<String, String> labels) {
-        return createClient(clientName, connectionType, threadPoolCoreSize, threadPoolMaxSize, labels, null);
-    }
-
+    
     /**
      * create a rpc client.
      *
@@ -94,12 +82,10 @@ public class RpcClientFactory {
      * @param connectionType     client type.
      * @param threadPoolCoreSize grpc thread pool core size
      * @param threadPoolMaxSize  grpc thread pool max size
-     * @param tlsConfig          tlsconfig
      * @return rpc client.
      */
     public static RpcClient createClient(String clientName, ConnectionType connectionType, Integer threadPoolCoreSize,
-                                         Integer threadPoolMaxSize, Map<String, String> labels, RpcClientTlsConfig tlsConfig) {
-
+            Integer threadPoolMaxSize, Map<String, String> labels) {
         if (!ConnectionType.GRPC.equals(connectionType)) {
             throw new UnsupportedOperationException("unsupported connection type :" + connectionType.getType());
         }
@@ -107,7 +93,7 @@ public class RpcClientFactory {
         return CLIENT_MAP.computeIfAbsent(clientName, clientNameInner -> {
             LOGGER.info("[RpcClientFactory] create a new rpc client of " + clientName);
             try {
-                return new GrpcSdkClient(clientNameInner, threadPoolCoreSize, threadPoolMaxSize, labels, tlsConfig);
+                return new GrpcSdkClient(clientNameInner, threadPoolCoreSize, threadPoolMaxSize, labels);
             } catch (Throwable throwable) {
                 LOGGER.error("Error to init GrpcSdkClient for client name :" + clientName, throwable);
                 throw throwable;
@@ -124,15 +110,10 @@ public class RpcClientFactory {
      * @return rpc client.
      */
     public static RpcClient createClusterClient(String clientName, ConnectionType connectionType,
-                                                Map<String, String> labels) {
+            Map<String, String> labels) {
         return createClusterClient(clientName, connectionType, null, null, labels);
     }
-
-    public static RpcClient createClusterClient(String clientName, ConnectionType connectionType,
-                                                Map<String, String> labels, RpcClientTlsConfig tlsConfig) {
-        return createClusterClient(clientName, connectionType, null, null, labels, tlsConfig);
-    }
-
+    
     /**
      * create a rpc client.
      *
@@ -143,29 +124,14 @@ public class RpcClientFactory {
      * @return rpc client.
      */
     public static RpcClient createClusterClient(String clientName, ConnectionType connectionType,
-                                                Integer threadPoolCoreSize, Integer threadPoolMaxSize, Map<String, String> labels) {
-        return createClusterClient(clientName, connectionType, threadPoolCoreSize, threadPoolMaxSize, labels, null);
-    }
-
-    /**
-     * createClusterClient.
-     * @param clientName client name.
-     * @param connectionType connectionType.
-     * @param threadPoolCoreSize coreSize.
-     * @param threadPoolMaxSize threadPoolSize.
-     * @param labels  tables.
-     * @param tlsConfig tlsConfig.
-     * @return
-     */
-
-    public static RpcClient createClusterClient(String clientName, ConnectionType connectionType, Integer threadPoolCoreSize,
-                                                Integer threadPoolMaxSize, Map<String, String> labels, RpcClientTlsConfig tlsConfig) {
+            Integer threadPoolCoreSize, Integer threadPoolMaxSize, Map<String, String> labels) {
         if (!ConnectionType.GRPC.equals(connectionType)) {
             throw new UnsupportedOperationException("unsupported connection type :" + connectionType.getType());
         }
-
+        
         return CLIENT_MAP.computeIfAbsent(clientName,
                 clientNameInner -> new GrpcClusterClient(clientNameInner, threadPoolCoreSize, threadPoolMaxSize,
-                        labels, tlsConfig));
+                        labels));
     }
+    
 }

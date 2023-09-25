@@ -130,7 +130,7 @@ class NewConfig extends React.Component {
       roundedSelection: false,
       readOnly: false,
       lineNumbersMinChars: true,
-      theme: 'vs-dark-enhanced',
+      theme: 'vs-dark',
       folding: true,
       showFoldingControls: 'always',
       cursorStyle: 'line',
@@ -458,10 +458,6 @@ class NewConfig extends React.Component {
         value: 'properties',
         label: 'Properties',
       },
-      {
-        value: 'toml',
-        label: 'TOML',
-      },
     ];
     const { editorClass } = this.state;
 
@@ -475,9 +471,6 @@ class NewConfig extends React.Component {
       >
         <h1>{locale.newListing}</h1>
         <Form className="new-config-form" field={this.field} {...formItemLayout}>
-          <Form.Item label={locale.namespace} required>
-            <p>{this.tenant ? this.tenant : 'public'}</p>
-          </Form.Item>
           <FormItem label={'Data ID'} required>
             <Input
               {...init('dataId', {

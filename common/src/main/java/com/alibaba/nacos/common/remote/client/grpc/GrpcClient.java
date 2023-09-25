@@ -26,37 +26,23 @@ import com.alibaba.nacos.api.remote.request.ServerCheckRequest;
 import com.alibaba.nacos.api.remote.response.ErrorResponse;
 import com.alibaba.nacos.api.remote.response.Response;
 import com.alibaba.nacos.api.remote.response.ServerCheckResponse;
-import com.alibaba.nacos.common.packagescan.resource.Resource;
 import com.alibaba.nacos.common.remote.ConnectionType;
+import com.alibaba.nacos.common.remote.client.Connection;
 import com.alibaba.nacos.common.remote.client.RpcClient;
 import com.alibaba.nacos.common.remote.client.RpcClientStatus;
-import com.alibaba.nacos.common.remote.client.Connection;
-import com.alibaba.nacos.common.remote.client.RpcClientTlsConfig;
 import com.alibaba.nacos.common.remote.client.ServerListFactory;
-import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.LoggerUtils;
-import com.alibaba.nacos.common.utils.StringUtils;
-import com.alibaba.nacos.common.utils.VersionUtils;
-import com.alibaba.nacos.common.utils.TlsTypeResolve;
 import com.alibaba.nacos.common.utils.ThreadFactoryBuilder;
-import com.google.common.base.Optional;
+import com.alibaba.nacos.common.utils.VersionUtils;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NegotiationType;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
-
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -135,12 +121,6 @@ public abstract class GrpcClient extends RpcClient {
                 .setThreadPoolMaxSize(threadPoolMaxSize).setLabels(labels).build());
     }
     
-    public GrpcClient(String name, Integer threadPoolCoreSize, Integer threadPoolMaxSize, Map<String, String> labels,
-            RpcClientTlsConfig tlsConfig) {
-        this(DefaultGrpcClientConfig.newBuilder().setName(name).setThreadPoolCoreSize(threadPoolCoreSize)
-                .setTlsConfig(tlsConfig).setThreadPoolMaxSize(threadPoolMaxSize).setLabels(labels).build());
-    }
-    
     protected ThreadPoolExecutor createGrpcExecutor(String serverIp) {
         // Thread name will use String.format, ipv6 maybe contain special word %, so handle it first.
         serverIp = serverIp.replaceAll("%", "-");
@@ -180,14 +160,11 @@ public abstract class GrpcClient extends RpcClient {
      * @return if server check success,return a non-null channel.
      */
     private ManagedChannel createNewManagedChannel(String serverIp, int serverPort) {
-        LOGGER.info("grpc client connection server:{} ip,serverPort:{},grpcTslConfig:{}", serverIp, serverPort,
-                JacksonUtils.toJson(clientConfig.tlsConfig()));
-        ManagedChannelBuilder<?> managedChannelBuilder = buildChannel(serverIp, serverPort, buildSslContext()).executor(
-                        grpcExecutor).compressorRegistry(CompressorRegistry.getDefaultInstance())
+        ManagedChannelBuilder<?> managedChannelBuilder = ManagedChannelBuilder.forAddress(serverIp, serverPort)
+                .executor(grpcExecutor).compressorRegistry(CompressorRegistry.getDefaultInstance())
                 .decompressorRegistry(DecompressorRegistry.getDefaultInstance())
                 .maxInboundMessageSize(clientConfig.maxInboundMessageSize())
-                .keepAliveTime(clientConfig.channelKeepAlive(), TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(clientConfig.channelKeepAliveTimeout(), TimeUnit.MILLISECONDS);
+                .keepAliveTime(clientConfig.channelKeepAlive(), TimeUnit.MILLISECONDS).usePlaintext();
         return managedChannelBuilder.build();
     }
     
@@ -222,11 +199,6 @@ public abstract class GrpcClient extends RpcClient {
         } catch (Exception e) {
             LoggerUtils.printIfErrorEnabled(LOGGER,
                     "Server check fail, please check server {} ,port {} is available , error ={}", ip, port, e);
-            if (this.clientConfig != null && this.clientConfig.tlsConfig() != null && this.clientConfig.tlsConfig()
-                    .getEnableTls()) {
-                LoggerUtils.printIfErrorEnabled(LOGGER,
-                        "current client is require tls encrypted ,server must support tls ,please check");
-            }
             return null;
         }
     }
@@ -259,8 +231,8 @@ public abstract class GrpcClient extends RpcClient {
                         } catch (Exception e) {
                             LoggerUtils.printIfErrorEnabled(LOGGER, "[{}]Handle server request exception: {}",
                                     grpcConn.getConnectionId(), payload.toString(), e.getMessage());
-                            Response errResponse = ErrorResponse.build(NacosException.CLIENT_ERROR,
-                                    "Handle server request error");
+                            Response errResponse = ErrorResponse
+                                    .build(NacosException.CLIENT_ERROR, "Handle server request error");
                             errResponse.setRequestId(request.getRequestId());
                             sendResponse(errResponse);
                         }
@@ -330,93 +302,44 @@ public abstract class GrpcClient extends RpcClient {
             int port = serverInfo.getServerPort() + rpcPortOffset();
             ManagedChannel managedChannel = createNewManagedChannel(serverInfo.getServerIp(), port);
             RequestGrpc.RequestFutureStub newChannelStubTemp = createNewChannelStub(managedChannel);
-            Response response = serverCheck(serverInfo.getServerIp(), port, newChannelStubTemp);
-            if (!(response instanceof ServerCheckResponse)) {
-                shuntDownChannel(managedChannel);
-                return null;
+            if (newChannelStubTemp != null) {
+                
+                Response response = serverCheck(serverInfo.getServerIp(), port, newChannelStubTemp);
+                if (response == null || !(response instanceof ServerCheckResponse)) {
+                    shuntDownChannel(managedChannel);
+                    return null;
+                }
+                
+                BiRequestStreamGrpc.BiRequestStreamStub biRequestStreamStub = BiRequestStreamGrpc
+                        .newStub(newChannelStubTemp.getChannel());
+                GrpcConnection grpcConn = new GrpcConnection(serverInfo, grpcExecutor);
+                grpcConn.setConnectionId(((ServerCheckResponse) response).getConnectionId());
+                
+                //create stream request and bind connection event to this connection.
+                StreamObserver<Payload> payloadStreamObserver = bindRequestStream(biRequestStreamStub, grpcConn);
+                
+                // stream observer to send response to server
+                grpcConn.setPayloadStreamObserver(payloadStreamObserver);
+                grpcConn.setGrpcFutureServiceStub(newChannelStubTemp);
+                grpcConn.setChannel(managedChannel);
+                //send a  setup request.
+                ConnectionSetupRequest conSetupRequest = new ConnectionSetupRequest();
+                conSetupRequest.setClientVersion(VersionUtils.getFullClientVersion());
+                conSetupRequest.setLabels(super.getLabels());
+                conSetupRequest.setAbilities(super.clientAbilities);
+                conSetupRequest.setTenant(super.getTenant());
+                grpcConn.sendRequest(conSetupRequest);
+                //wait to register connection setup
+                Thread.sleep(100L);
+                return grpcConn;
             }
-
-            BiRequestStreamGrpc.BiRequestStreamStub biRequestStreamStub = BiRequestStreamGrpc.newStub(
-                    newChannelStubTemp.getChannel());
-            GrpcConnection grpcConn = new GrpcConnection(serverInfo, grpcExecutor);
-            grpcConn.setConnectionId(((ServerCheckResponse) response).getConnectionId());
-
-            //create stream request and bind connection event to this connection.
-            StreamObserver<Payload> payloadStreamObserver = bindRequestStream(biRequestStreamStub, grpcConn);
-
-            // stream observer to send response to server
-            grpcConn.setPayloadStreamObserver(payloadStreamObserver);
-            grpcConn.setGrpcFutureServiceStub(newChannelStubTemp);
-            grpcConn.setChannel(managedChannel);
-            //send a  setup request.
-            ConnectionSetupRequest conSetupRequest = new ConnectionSetupRequest();
-            conSetupRequest.setClientVersion(VersionUtils.getFullClientVersion());
-            conSetupRequest.setLabels(super.getLabels());
-            conSetupRequest.setAbilities(super.clientAbilities);
-            conSetupRequest.setTenant(super.getTenant());
-            grpcConn.sendRequest(conSetupRequest);
-            //wait to register connection setup
-            Thread.sleep(100L);
-            return grpcConn;
+            return null;
         } catch (Exception e) {
-            LOGGER.error("[{}]Fail to connect to server!", GrpcClient.this.getName(), e);
+            LOGGER.error("[{}]Fail to connect to server!,error={}", GrpcClient.this.getName(), e);
         }
         return null;
     }
     
-    private ManagedChannelBuilder buildChannel(String serverIp, int port, Optional<SslContext> sslContext) {
-        if (sslContext.isPresent()) {
-            return NettyChannelBuilder.forAddress(serverIp, port).negotiationType(NegotiationType.TLS)
-                    .sslContext(sslContext.get());
-            
-        } else {
-            return ManagedChannelBuilder.forAddress(serverIp, port).usePlaintext();
-        }
-    }
-    
-    private Optional<SslContext> buildSslContext() {
-        
-        RpcClientTlsConfig tlsConfig = clientConfig.tlsConfig();
-        if (!tlsConfig.getEnableTls()) {
-            return Optional.absent();
-        }
-        try {
-            SslContextBuilder builder = GrpcSslContexts.forClient();
-            if (StringUtils.isNotBlank(tlsConfig.getSslProvider())) {
-                builder.sslProvider(TlsTypeResolve.getSslProvider(tlsConfig.getSslProvider()));
-            }
-            
-            if (StringUtils.isNotBlank(tlsConfig.getProtocols())) {
-                builder.protocols(tlsConfig.getProtocols().split(","));
-            }
-            if (StringUtils.isNotBlank(tlsConfig.getCiphers())) {
-                builder.ciphers(Arrays.asList(tlsConfig.getCiphers().split(",")));
-            }
-            if (tlsConfig.getTrustAll()) {
-                builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-            } else {
-                if (StringUtils.isBlank(tlsConfig.getTrustCollectionCertFile())) {
-                    throw new IllegalArgumentException("trustCollectionCertFile must be not null");
-                }
-                Resource resource = resourceLoader.getResource(tlsConfig.getTrustCollectionCertFile());
-                builder.trustManager(resource.getInputStream());
-            }
-            
-            if (tlsConfig.getMutualAuthEnable()) {
-                if (StringUtils.isBlank(tlsConfig.getCertChainFile()) || StringUtils.isBlank(
-                        tlsConfig.getCertPrivateKey())) {
-                    throw new IllegalArgumentException("client certChainFile or certPrivateKey must be not null");
-                }
-                Resource certChainFile = resourceLoader.getResource(tlsConfig.getCertChainFile());
-                Resource privateKey = resourceLoader.getResource(tlsConfig.getCertPrivateKey());
-                builder.keyManager(certChainFile.getInputStream(), privateKey.getInputStream(),
-                        tlsConfig.getCertPrivateKeyPassword());
-            }
-            return Optional.of(builder.build());
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to build SslContext", e);
-        }
-    }
 }
 
 

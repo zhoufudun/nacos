@@ -74,7 +74,7 @@ class UserManagement extends React.Component {
     };
     if (this.state.defaultFuzzySearch) {
       if (params.username && params.username !== '') {
-        params.username = `*${params.username}*`;
+        params.username = '*' + params.username + '*';
       }
     }
     if (params.username && params.username.indexOf('*') !== -1) {
@@ -121,9 +121,9 @@ class UserManagement extends React.Component {
       <>
         <RegionGroup left={locale.userManagement} />
         <Form inline>
-          <Form.Item label={locale.username}>
+          <Form.Item label="用户名">
             <Input
-              value={this.state.username || ''}
+              value={this.username}
               htmlType="text"
               placeholder={this.state.defaultFuzzySearch ? locale.defaultFuzzyd : locale.fuzzyd}
               style={{ width: 200 }}
@@ -133,24 +133,20 @@ class UserManagement extends React.Component {
               }}
             />
           </Form.Item>
-          <Form.Item label={locale.fuzzydMode}>
+          <Form.Item label="默认模糊匹配">
             <Switch
               checkedChildren=""
               unCheckedChildren=""
               defaultChecked={this.state.defaultFuzzySearch}
               onChange={this.handleDefaultFuzzySwitchChange}
-              title={locale.fuzzyd}
+              title={'自动在搜索参数前后加上*'}
             />
           </Form.Item>
           <Form.Item label={''}>
             <Button
               type={'primary'}
               style={{ marginRight: 10 }}
-              onClick={() => {
-                this.setState({ pageNo: 1 }, () => {
-                  this.getUsers();
-                });
-              }}
+              onClick={() => this.getUsers()}
               data-spm-click={'gostr=/aliyun;locaid=dashsearch'}
             >
               {locale.query}

@@ -35,17 +35,11 @@ public class LocalDataChangeEvent extends Event {
     
     public final String tag;
     
-    public final boolean isBatch;
-    
-    public final int delimiter;
-    
     public LocalDataChangeEvent(String groupKey) {
         this.groupKey = groupKey;
         this.isBeta = false;
         this.betaIps = null;
         this.tag = null;
-        this.isBatch = false;
-        this.delimiter = 0;
     }
     
     public LocalDataChangeEvent(String groupKey, boolean isBeta, List<String> betaIps) {
@@ -53,25 +47,12 @@ public class LocalDataChangeEvent extends Event {
         this.isBeta = isBeta;
         this.betaIps = betaIps;
         this.tag = null;
-        this.isBatch = false;
-        this.delimiter = 0;
     }
     
-    public LocalDataChangeEvent(String groupKey, String tag) {
+    public LocalDataChangeEvent(String groupKey, boolean isBeta, List<String> betaIps, String tag) {
         this.groupKey = groupKey;
-        this.isBeta = false;
-        this.betaIps = null;
+        this.isBeta = isBeta;
+        this.betaIps = betaIps;
         this.tag = tag;
-        this.isBatch = false;
-        this.delimiter = 0;
-    }
-    
-    public LocalDataChangeEvent(String groupKey, boolean isBatch, int delimiter) {
-        this.groupKey = groupKey;
-        this.isBeta = false;
-        this.betaIps = null;
-        this.tag = null;
-        this.isBatch = isBatch;
-        this.delimiter = delimiter;
     }
 }

@@ -151,11 +151,9 @@ public class NamingMetadataManager extends SmartSubscriber {
      */
     public void removeInstanceMetadata(Service service, String metadataId) {
         ConcurrentMap<String, InstanceMetadata> instanceMetadataMapForService = instanceMetadataMap.get(service);
-        if (null != instanceMetadataMapForService) {
-            instanceMetadataMapForService.remove(metadataId);
-            if (instanceMetadataMapForService.isEmpty()) {
-                serviceMetadataMap.remove(service);
-            }
+        instanceMetadataMapForService.remove(metadataId);
+        if (instanceMetadataMapForService.isEmpty()) {
+            serviceMetadataMap.remove(service);
         }
         expiredMetadataInfos.remove(ExpiredMetadataInfo.newExpiredInstanceMetadata(service, metadataId));
     }

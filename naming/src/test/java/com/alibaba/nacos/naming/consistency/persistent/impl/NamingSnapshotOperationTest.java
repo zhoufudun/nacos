@@ -16,7 +16,6 @@
 
 package com.alibaba.nacos.naming.consistency.persistent.impl;
 
-import com.alibaba.nacos.consistency.Serializer;
 import com.alibaba.nacos.consistency.snapshot.Reader;
 import com.alibaba.nacos.consistency.snapshot.Writer;
 import com.alibaba.nacos.core.distributed.raft.RaftConfig;
@@ -29,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.env.MockEnvironment;
 
@@ -75,7 +73,7 @@ public class NamingSnapshotOperationTest {
     @Test
     public void testNamingSnapshot() throws InterruptedException {
         AtomicBoolean result = new AtomicBoolean(false);
-        NamingSnapshotOperation operation = new NamingSnapshotOperation(storage, lock, Mockito.mock(Serializer.class));
+        NamingSnapshotOperation operation = new NamingSnapshotOperation(storage, lock);
         final Writer writer = new Writer(snapshotDir);
         final CountDownLatch latch = new CountDownLatch(1);
         

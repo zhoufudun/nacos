@@ -18,7 +18,6 @@ package com.alibaba.nacos.client.utils;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,9 +66,7 @@ public class ValidatorUtilsTest {
         try {
             Properties properties = new Properties();
             properties.setProperty(PropertyKeyConst.CONTEXT_PATH, "test");
-    
-            final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(properties);
-            ValidatorUtils.checkInitParam(nacosClientProperties);
+            ValidatorUtils.checkInitParam(properties);
         } catch (NacosException e) {
             Assert.fail();
         }

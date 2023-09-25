@@ -28,8 +28,6 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
-import static com.alibaba.nacos.client.utils.ParamUtil.simplyEnvNameIfOverLimit;
-
 /**
  * Encrypted data key (EncryptedDataKey) local snapshot, disaster recovery directory related.
  *
@@ -54,11 +52,9 @@ public class LocalEncryptedDataKeyProcessor extends LocalConfigInfoProcessor {
     private static final String SUFFIX = "_nacos";
     
     /**
-     * Obtain the EncryptedDataKey of the disaster recovery configuration. NULL means there is no local file or an
-     * exception is thrown.
+     * Obtain the EncryptedDataKey of the disaster recovery configuration. NULL means there is no local file or an exception is thrown.
      */
     public static String getEncryptDataKeyFailover(String envName, String dataId, String group, String tenant) {
-        envName = simplyEnvNameIfOverLimit(envName);
         File file = getEncryptDataKeyFailoverFile(envName, dataId, group, tenant);
         if (!file.exists() || !file.isFile()) {
             return null;
@@ -73,11 +69,9 @@ public class LocalEncryptedDataKeyProcessor extends LocalConfigInfoProcessor {
     }
     
     /**
-     * Get the EncryptedDataKey of the locally cached file. NULL means there is no local file or an exception is
-     * thrown.
+     * Get the EncryptedDataKey of the locally cached file. NULL means there is no local file or an exception is thrown.
      */
     public static String getEncryptDataKeySnapshot(String envName, String dataId, String group, String tenant) {
-        
         if (!SnapShotSwitch.getIsSnapShot()) {
             return null;
         }
@@ -130,8 +124,6 @@ public class LocalEncryptedDataKeyProcessor extends LocalConfigInfoProcessor {
     }
     
     private static File getEncryptDataKeyFailoverFile(String envName, String dataId, String group, String tenant) {
-        envName = simplyEnvNameIfOverLimit(envName);
-        
         File tmp = new File(LOCAL_SNAPSHOT_PATH, envName + SUFFIX);
         tmp = new File(tmp, FAILOVER_CHILD_1);
         
@@ -146,8 +138,6 @@ public class LocalEncryptedDataKeyProcessor extends LocalConfigInfoProcessor {
     }
     
     private static File getEncryptDataKeySnapshotFile(String envName, String dataId, String group, String tenant) {
-        envName = simplyEnvNameIfOverLimit(envName);
-        
         File tmp = new File(LOCAL_SNAPSHOT_PATH, envName + SUFFIX);
         tmp = new File(tmp, SNAPSHOT_CHILD_1);
         

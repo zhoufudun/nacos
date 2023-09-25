@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Auth Service for Grpc protocol.
+ * Auth Service for Http protocol.
  *
  * @author xiweng.yy
  */

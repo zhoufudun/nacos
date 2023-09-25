@@ -48,7 +48,7 @@ class PermissionsManagement extends React.Component {
   static propTypes = {
     locale: PropTypes.object,
     permissions: PropTypes.object,
-    namespaces: PropTypes.array,
+    namespaces: PropTypes.object,
     getPermissions: PropTypes.func,
     getNamespaces: PropTypes.func,
   };
@@ -74,11 +74,11 @@ class PermissionsManagement extends React.Component {
   getPermissions() {
     this.setState({ loading: true });
     const { pageNo, pageSize } = this.state;
-    let { role } = this.state;
+    let role = this.state.role;
     let search = 'accurate';
     if (this.state.defaultFuzzySearch) {
       if (role && role !== '') {
-        role = `*${role}*`;
+        role = '*' + role + '*';
       }
     }
     if (role && role.indexOf('*') !== -1) {
@@ -118,7 +118,7 @@ class PermissionsManagement extends React.Component {
       <>
         <RegionGroup left={locale.privilegeManagement} />
         <Form inline>
-          <Form.Item label={locale.role}>
+          <Form.Item label="角色名">
             <Input
               value={this.state.role}
               htmlType="text"
@@ -129,24 +129,20 @@ class PermissionsManagement extends React.Component {
               }}
             />
           </Form.Item>
-          <Form.Item label={locale.fuzzydMode}>
+          <Form.Item label="默认模糊匹配">
             <Switch
               checkedChildren=""
               unCheckedChildren=""
               defaultChecked={this.state.defaultFuzzySearch}
               onChange={this.handleDefaultFuzzySwitchChange}
-              title={locale.fuzzyd}
+              title={'自动在搜索参数前后加上*'}
             />
           </Form.Item>
           <Form.Item label={''}>
             <Button
               type={'primary'}
               style={{ marginRight: 10 }}
-              onClick={() => {
-                this.setState({ pageNo: 1 }, () => {
-                  this.getPermissions();
-                });
-              }}
+              onClick={() => this.getPermissions()}
               data-spm-click={'gostr=/aliyun;locaid=dashsearch'}
             >
               {locale.query}

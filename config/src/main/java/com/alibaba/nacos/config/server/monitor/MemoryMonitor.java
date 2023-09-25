@@ -48,13 +48,9 @@ public class MemoryMonitor {
     
     private static final long DELAY_SECONDS = 10;
     
-    /**
-     * reset some metrics to 0 every day.
-     */
     @Scheduled(cron = "0 0 0 * * ?")
     public void clear() {
         MetricsMonitor.getConfigMonitor().set(0);
         MetricsMonitor.getPublishMonitor().set(0);
-        MetricsMonitor.getFuzzySearchMonitor().set(0);
     }
 }

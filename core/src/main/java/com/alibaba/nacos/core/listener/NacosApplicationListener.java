@@ -31,48 +31,42 @@ public interface NacosApplicationListener {
     /**
      * {@link SpringApplicationRunListener#starting}.
      */
-    default void starting() {
-    }
+    void starting();
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#environmentPrepared}.
      *
      * @param environment environment
      */
-    default void environmentPrepared(ConfigurableEnvironment environment) {
-    }
+    void environmentPrepared(ConfigurableEnvironment environment);
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#contextLoaded}.
      *
      * @param context context
      */
-    default void contextPrepared(ConfigurableApplicationContext context) {
-    }
+    void contextPrepared(ConfigurableApplicationContext context);
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#contextLoaded}.
      *
      * @param context context
      */
-    default void contextLoaded(ConfigurableApplicationContext context) {
-    }
+    void contextLoaded(ConfigurableApplicationContext context);
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#started}.
      *
      * @param context context
      */
-    default void started(ConfigurableApplicationContext context) {
-    }
+    void started(ConfigurableApplicationContext context);
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#running}.
      *
      * @param context context
      */
-    default void running(ConfigurableApplicationContext context) {
-    }
+    void running(ConfigurableApplicationContext context);
     
     /**
      * {@link com.alibaba.nacos.core.code.SpringApplicationRunListener#failed}.
@@ -80,6 +74,5 @@ public interface NacosApplicationListener {
      * @param context   context
      * @param exception exception
      */
-    default void failed(ConfigurableApplicationContext context, Throwable exception) {
-    }
+    void failed(ConfigurableApplicationContext context, Throwable exception);
 }

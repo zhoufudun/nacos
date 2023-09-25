@@ -29,7 +29,7 @@ public class IdentityContext {
     /**
      * get context from request.
      */
-    private final Map<String, Object> param = new HashMap<>();
+    private final Map<String, Object> param = new HashMap<String, Object>();
     
     /**
      * get key from context.

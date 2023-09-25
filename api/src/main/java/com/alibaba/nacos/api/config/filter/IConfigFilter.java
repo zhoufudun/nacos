@@ -33,6 +33,14 @@ public interface IConfigFilter {
     /**
      * Init.
      *
+     * @param filterConfig Filter Config
+     */
+    @Deprecated
+    void init(IFilterConfig filterConfig);
+    
+    /**
+     * Init.
+     *
      * @param properties Filter Config
      */
     void init(Properties properties);

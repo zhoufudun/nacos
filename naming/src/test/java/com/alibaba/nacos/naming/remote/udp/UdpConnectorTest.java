@@ -76,7 +76,7 @@ public class UdpConnectorTest {
         DatagramSocket oldSocket = (DatagramSocket) ReflectionTestUtils.getField(udpConnector, "udpSocket");
         ReflectionTestUtils.setField(udpConnector, "udpSocket", udpSocket);
         doAnswer(invocationOnMock -> {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.MINUTES.sleep(1);
             return null;
         }).when(udpSocket).receive(any(DatagramPacket.class));
         oldSocket.close();
@@ -84,9 +84,8 @@ public class UdpConnectorTest {
     }
     
     @After
-    public void tearDown() throws InterruptedException {
+    public void tearDown() {
         udpConnector.shutdown();
-        TimeUnit.SECONDS.sleep(1);
     }
     
     @Test

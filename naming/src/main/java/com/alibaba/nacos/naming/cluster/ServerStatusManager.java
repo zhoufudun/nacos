@@ -35,7 +35,7 @@ import java.util.Optional;
 @Service
 public class ServerStatusManager {
     
-    @Resource(name = "persistentConsistencyServiceDelegate")
+    @Resource(name = "consistencyDelegate")
     private ConsistencyService consistencyService;
     
     private final SwitchDomain switchDomain;

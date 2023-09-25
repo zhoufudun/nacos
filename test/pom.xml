@@ -29,13 +29,17 @@
     <packaging>pom</packaging>
 
     <name>nacos-test ${project.version}</name>
-    <url>https://nacos.io</url>
+    <url>http://nacos.io</url>
     <modules>
         <module>config-test</module>
         <module>naming-test</module>
         <module>core-test</module>
     </modules>
     
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
 
         <dependency>

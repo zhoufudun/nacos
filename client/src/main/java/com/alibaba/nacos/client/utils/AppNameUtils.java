@@ -17,7 +17,6 @@
 package com.alibaba.nacos.client.utils;
 
 import com.alibaba.nacos.client.constant.Constants;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.common.utils.StringUtils;
 
 import java.io.File;
@@ -64,17 +63,17 @@ public class AppNameUtils {
     }
     
     private static String getAppNameByProjectName() {
-        return NacosClientProperties.PROTOTYPE.getProperty(Constants.SysEnv.PROJECT_NAME);
+        return System.getProperty(Constants.SysEnv.PROJECT_NAME);
     }
     
     private static String getAppNameByServerHome() {
         String serverHome = null;
         if (SERVER_JBOSS.equals(getServerType())) {
-            serverHome = NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_JBOSS);
+            serverHome = System.getProperty(PARAM_MARKING_JBOSS);
         } else if (SERVER_JETTY.equals(getServerType())) {
-            serverHome = NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_JETTY);
+            serverHome = System.getProperty(PARAM_MARKING_JETTY);
         } else if (SERVER_TOMCAT.equals(getServerType())) {
-            serverHome = NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_TOMCAT);
+            serverHome = System.getProperty(PARAM_MARKING_TOMCAT);
         }
         
         if (serverHome != null && serverHome.startsWith(LINUX_ADMIN_HOME)) {
@@ -86,11 +85,11 @@ public class AppNameUtils {
     
     private static String getServerType() {
         String serverType;
-        if (NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_JBOSS) != null) {
+        if (System.getProperty(PARAM_MARKING_JBOSS) != null) {
             serverType = SERVER_JBOSS;
-        } else if (NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_JETTY) != null) {
+        } else if (System.getProperty(PARAM_MARKING_JETTY) != null) {
             serverType = SERVER_JETTY;
-        } else if (NacosClientProperties.PROTOTYPE.getProperty(PARAM_MARKING_TOMCAT) != null) {
+        } else if (System.getProperty(PARAM_MARKING_TOMCAT) != null) {
             serverType = SERVER_TOMCAT;
         } else {
             serverType = SERVER_UNKNOWN;

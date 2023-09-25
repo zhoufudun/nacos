@@ -16,9 +16,9 @@
 
 package com.alibaba.nacos.naming.monitor;
 
-import com.alibaba.nacos.plugin.control.ControlManagerCenter;
-import com.alibaba.nacos.plugin.control.tps.TpsControlManager;
-import com.alibaba.nacos.plugin.control.tps.request.TpsCheckRequest;
+import com.alibaba.nacos.core.remote.control.TpsMonitorManager;
+import com.alibaba.nacos.core.remote.control.TpsMonitorPoint;
+import com.alibaba.nacos.sys.utils.ApplicationUtils;
 
 /**
  * Tps and flow control monitor singleton for Naming.
@@ -29,29 +29,30 @@ public class NamingTpsMonitor {
     
     private static final NamingTpsMonitor INSTANCE = new NamingTpsMonitor();
     
-    private final TpsControlManager tpsControlManager = ControlManagerCenter.getInstance().getTpsControlManager();
+    private final TpsMonitorManager tpsMonitorManager;
     
     private NamingTpsMonitor() {
+        this.tpsMonitorManager = ApplicationUtils.getBean(TpsMonitorManager.class);
         registerPushMonitorPoint();
         registerDistroMonitorPoint();
     }
     
     private void registerPushMonitorPoint() {
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_RPC_PUSH.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_RPC_PUSH_SUCCESS.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_RPC_PUSH_FAIL.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_UDP_PUSH.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_UDP_PUSH_SUCCESS.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_UDP_PUSH_FAIL.name());
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_RPC_PUSH.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_RPC_PUSH_SUCCESS.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_RPC_PUSH_FAIL.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_UDP_PUSH.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_UDP_PUSH_SUCCESS.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_UDP_PUSH_FAIL.name()));
     }
     
     private void registerDistroMonitorPoint() {
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_SYNC.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_SYNC_SUCCESS.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_SYNC_FAIL.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY_SUCCESS.name());
-        tpsControlManager.registerTpsPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY_FAIL.name());
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_SYNC.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_SYNC_SUCCESS.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_SYNC_FAIL.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY_SUCCESS.name()));
+        tpsMonitorManager.registerTpsControlPoint(new TpsMonitorPoint(TpsMonitorItem.NAMING_DISTRO_VERIFY_FAIL.name()));
     }
     
     public static NamingTpsMonitor getInstance() {
@@ -65,8 +66,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void rpcPushSuccess(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_RPC_PUSH.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_RPC_PUSH_SUCCESS.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_RPC_PUSH.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_RPC_PUSH_SUCCESS.name(), clientId, clientIp);
     }
     
     /**
@@ -76,8 +77,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void rpcPushFail(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_RPC_PUSH.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_RPC_PUSH_FAIL.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_RPC_PUSH.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_RPC_PUSH_FAIL.name(), clientId, clientIp);
     }
     
     /**
@@ -87,9 +88,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void udpPushSuccess(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_UDP_PUSH.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager
-                .check(new TpsCheckRequest(TpsMonitorItem.NAMING_UDP_PUSH_SUCCESS.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_UDP_PUSH.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_UDP_PUSH_SUCCESS.name(), clientId, clientIp);
     }
     
     /**
@@ -99,8 +99,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void udpPushFail(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_UDP_PUSH.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_UDP_PUSH_FAIL.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_UDP_PUSH.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_UDP_PUSH_FAIL.name(), clientId, clientIp);
     }
     
     /**
@@ -110,9 +110,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void distroSyncSuccess(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_SYNC.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager
-                .check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_SYNC_SUCCESS.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_SYNC.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_SYNC_SUCCESS.name(), clientId, clientIp);
     }
     
     /**
@@ -122,9 +121,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void distroSyncFail(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_SYNC.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager
-                .check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_SYNC_FAIL.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_SYNC.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_SYNC_FAIL.name(), clientId, clientIp);
     }
     
     /**
@@ -134,9 +132,8 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void distroVerifySuccess(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_VERIFY.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager
-                .check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_VERIFY_SUCCESS.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_VERIFY.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_VERIFY_SUCCESS.name(), clientId, clientIp);
     }
     
     /**
@@ -146,9 +143,7 @@ public class NamingTpsMonitor {
      * @param clientIp client ip
      */
     public static void distroVerifyFail(String clientId, String clientIp) {
-        INSTANCE.tpsControlManager.check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_VERIFY.name(), clientId, clientIp));
-        INSTANCE.tpsControlManager
-                .check(new TpsCheckRequest(TpsMonitorItem.NAMING_DISTRO_VERIFY_FAIL.name(), clientId, clientIp));
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_VERIFY.name(), clientId, clientIp);
+        INSTANCE.tpsMonitorManager.applyTpsForClientIp(TpsMonitorItem.NAMING_DISTRO_VERIFY_FAIL.name(), clientId, clientIp);
     }
-    
 }

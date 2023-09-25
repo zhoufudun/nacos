@@ -31,10 +31,7 @@ import com.alibaba.nacos.common.utils.ThreadUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -145,7 +142,7 @@ public class FailoverReactor implements Closeable {
         @Override
         public void run() {
             try {
-                File switchFile = Paths.get(failoverDir, UtilAndComs.FAILOVER_SWITCH).toFile();
+                File switchFile = new File(failoverDir + UtilAndComs.FAILOVER_SWITCH);
                 if (!switchFile.exists()) {
                     switchParams.put(FAILOVER_MODE_PARAM, Boolean.FALSE.toString());
                     NAMING_LOGGER.debug("failover switch is not found, {}", switchFile.getName());
@@ -156,7 +153,7 @@ public class FailoverReactor implements Closeable {
                 
                 if (lastModifiedMillis < modified) {
                     lastModifiedMillis = modified;
-                    String failover = ConcurrentDiskUtil.getFileContent(switchFile.getPath(),
+                    String failover = ConcurrentDiskUtil.getFileContent(failoverDir + UtilAndComs.FAILOVER_SWITCH,
                             Charset.defaultCharset().toString());
                     if (!StringUtils.isEmpty(failover)) {
                         String[] lines = failover.split(DiskCache.getLineSeparator());
@@ -211,12 +208,11 @@ public class FailoverReactor implements Closeable {
                         continue;
                     }
                     
-                    ServiceInfo dom = null;
+                    ServiceInfo dom = new ServiceInfo(file.getName());
                     
                     try {
-                        dom = new ServiceInfo(URLDecoder.decode(file.getName(), StandardCharsets.UTF_8.name()));
-                        String dataString = ConcurrentDiskUtil.getFileContent(file,
-                                Charset.defaultCharset().toString());
+                        String dataString = ConcurrentDiskUtil
+                                .getFileContent(file, Charset.defaultCharset().toString());
                         reader = new BufferedReader(new StringReader(dataString));
                         
                         String json;
@@ -239,7 +235,7 @@ public class FailoverReactor implements Closeable {
                             //ignore
                         }
                     }
-                    if (dom != null && !CollectionUtils.isEmpty(dom.getHosts())) {
+                    if (!CollectionUtils.isEmpty(dom.getHosts())) {
                         domMap.put(dom.getKey(), dom);
                     }
                 }

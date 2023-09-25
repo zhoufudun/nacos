@@ -35,13 +35,7 @@ public class ConfigDumpEvent extends Event {
     
     private String group;
     
-    private String encryptedDataKey;
-    
     private boolean isBeta;
-    
-    private boolean isBatch;
-    
-    private int delimiter;
     
     private String tag;
     
@@ -55,13 +49,7 @@ public class ConfigDumpEvent extends Event {
     
     private long lastModifiedTs;
     
-    public int getDelimiter() {
-        return delimiter;
-    }
-    
-    public void setDelimiter(int delimiter) {
-        this.delimiter = delimiter;
-    }
+    private String encryptedDataKey;
     
     public boolean isRemove() {
         return remove;
@@ -109,14 +97,6 @@ public class ConfigDumpEvent extends Event {
     
     public void setTag(String tag) {
         this.tag = tag;
-    }
-    
-    public boolean isBatch() {
-        return isBatch;
-    }
-    
-    public void setBatch(boolean batch) {
-        isBatch = batch;
     }
     
     public String getContent() {
@@ -183,13 +163,7 @@ public class ConfigDumpEvent extends Event {
         
         private boolean isBeta;
         
-        private boolean isBatch;
-        
-        private int delimiter;
-        
         private String tag;
-        
-        private String encryptedDataKey;
         
         private String content;
         
@@ -201,12 +175,9 @@ public class ConfigDumpEvent extends Event {
         
         private long lastModifiedTs;
         
-        private ConfigDumpEventBuilder() {
-        }
+        private String encryptedDataKey;
         
-        public ConfigDumpEventBuilder delimiter(int delimiter) {
-            this.delimiter = delimiter;
-            return this;
+        private ConfigDumpEventBuilder() {
         }
         
         public ConfigDumpEventBuilder remove(boolean remove) {
@@ -254,11 +225,6 @@ public class ConfigDumpEvent extends Event {
             return this;
         }
         
-        public ConfigDumpEventBuilder encryptedDataKey(String encryptedDataKey) {
-            this.encryptedDataKey = encryptedDataKey;
-            return this;
-        }
-        
         public ConfigDumpEventBuilder type(String type) {
             this.type = type;
             return this;
@@ -269,8 +235,8 @@ public class ConfigDumpEvent extends Event {
             return this;
         }
         
-        public ConfigDumpEventBuilder isBatch(boolean isBatch) {
-            this.isBatch = isBatch;
+        public ConfigDumpEventBuilder encryptedDataKey(String encryptedDataKey) {
+            this.encryptedDataKey = encryptedDataKey;
             return this;
         }
         
@@ -289,14 +255,11 @@ public class ConfigDumpEvent extends Event {
             configDumpEvent.setContent(content);
             configDumpEvent.setBetaIps(betaIps);
             configDumpEvent.setHandleIp(handleIp);
-            configDumpEvent.setEncryptedDataKey(encryptedDataKey);
             configDumpEvent.setType(type);
-            configDumpEvent.setBatch(isBatch);
-            configDumpEvent.setDelimiter(delimiter);
             configDumpEvent.setLastModifiedTs(lastModifiedTs);
             configDumpEvent.isBeta = this.isBeta;
+            configDumpEvent.setEncryptedDataKey(encryptedDataKey);
             return configDumpEvent;
         }
     }
-    
 }

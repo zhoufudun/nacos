@@ -24,9 +24,6 @@ import java.nio.charset.StandardCharsets;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class ByteUtils {
-
-    private ByteUtils() {
-    }
     
     public static final byte[] EMPTY = new byte[0];
     

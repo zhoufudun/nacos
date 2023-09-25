@@ -43,9 +43,6 @@ import static com.alibaba.nacos.api.exception.NacosException.SERVER_ERROR;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class ClassUtils {
-
-    private ClassUtils() {
-    }
     
     public static final String ARRAY_SUFFIX = "[]";
     

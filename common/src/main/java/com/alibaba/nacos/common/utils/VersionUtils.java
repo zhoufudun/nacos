@@ -27,9 +27,6 @@ import java.util.Properties;
  * @author xingxuechao on:2019/2/27 12:32 PM
  */
 public class VersionUtils {
-
-    private VersionUtils() {
-    }
     
     public static String version;
     

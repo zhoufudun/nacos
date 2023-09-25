@@ -16,6 +16,11 @@
 
 package com.alibaba.nacos.naming.cluster.transport;
 
+import com.alibaba.nacos.naming.consistency.Datum;
+import com.alibaba.nacos.naming.pojo.Record;
+
+import java.util.Map;
+
 /**
  * Serializer specially for large map of data.
  *
@@ -42,4 +47,14 @@ public interface Serializer {
      * @return deserialized data map
      */
     <T> T deserialize(byte[] data, Class<T> clazz);
+    
+    /**
+     * Deserialize byte array data to target type.
+     *
+     * @param <T>   target type
+     * @param data  data to deserialize
+     * @param clazz target type
+     * @return deserialized data map
+     */
+    <T extends Record> Map<String, Datum<T>> deserializeMap(byte[] data, Class<T> clazz);
 }

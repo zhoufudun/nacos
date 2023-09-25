@@ -18,7 +18,6 @@ package com.alibaba.nacos.common.trace.event.naming;
 
 /**
  * Naming register instance trace event.
- *
  * @author yanda
  */
 public class RegisterInstanceTraceEvent extends NamingTraceEvent {
@@ -29,9 +28,9 @@ public class RegisterInstanceTraceEvent extends NamingTraceEvent {
     
     private final boolean rpc;
     
-    private final String instanceIp;
+    private String instanceIp;
     
-    private final int instancePort;
+    private int instancePort;
     
     public String getClientIp() {
         return clientIp;

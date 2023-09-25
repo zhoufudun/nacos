@@ -16,7 +16,6 @@
 
 package com.alibaba.nacos.config.server.constant;
 
-import com.alibaba.nacos.common.utils.StringUtils;
 import com.alibaba.nacos.config.server.model.event.ConfigDumpEvent;
 
 /**
@@ -32,15 +31,20 @@ public class Constants {
     
     public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
     
-    public static final String DATASOURCE_PLATFORM_PROPERTY_STATE = "datasource_platform";
-    
     /**
      * Config file directory in server side.
+     *
      */
     public static final String BASE_DIR = "config-data";
     
     /**
+     * The derby base dir.
+     */
+    public static final String DERBY_BASE_DIR = "derby-data";
+    
+    /**
      * Back up file directory in server side.
+     *
      */
     public static final String CONFIG_BAK_DIR = System.getProperty("user.home", "/home/admin") + "/nacos/bak_data";
     
@@ -112,8 +116,6 @@ public class Constants {
     
     public static final String BASE_PATH = "/v1/cs";
     
-    public static final String BASE_V2_PATH = "/v2/cs";
-    
     public static final String OPS_CONTROLLER_PATH = BASE_PATH + "/ops";
     
     public static final String CAPACITY_CONTROLLER_PATH = BASE_PATH + "/capacity";
@@ -122,13 +124,9 @@ public class Constants {
     
     public static final String CONFIG_CONTROLLER_PATH = BASE_PATH + "/configs";
     
-    public static final String CONFIG_CONTROLLER_V2_PATH = BASE_V2_PATH + "/config";
-    
     public static final String HEALTH_CONTROLLER_PATH = BASE_PATH + "/health";
     
     public static final String HISTORY_CONTROLLER_PATH = BASE_PATH + "/history";
-    
-    public static final String HISTORY_CONTROLLER_V2_PATH = BASE_V2_PATH + "/history";
     
     public static final String LISTENER_CONTROLLER_PATH = BASE_PATH + "/listener";
     
@@ -137,12 +135,6 @@ public class Constants {
     public static final String METRICS_CONTROLLER_PATH = BASE_PATH + "/metrics";
     
     public static final String ENCODE = "UTF-8";
-    
-    public static final String PERSIST_ENCODE = getPersistEncode();
-    
-    public static final String ENCODE_GBK = "GBK";
-    
-    public static final String ENCODE_UTF8 = "UTF-8";
     
     public static final String MAP_FILE = "map-file.js";
     
@@ -264,6 +256,8 @@ public class Constants {
     
     public static final int ATOMIC_MAX_SIZE = 1000;
     
+    public static final String CONFIG_MODEL_RAFT_GROUP = "nacos_config";
+    
     public static final int DATA_IN_BODY_VERSION = 204;
     
     /**
@@ -276,6 +270,11 @@ public class Constants {
      */
     public static final String EXTEND_INFOS_CONFIG_DUMP_EVENT = ConfigDumpEvent.class.getName() + "@@many";
     
+    /**
+     * Specifies that reads wait without timeout.
+     */
+    public static final String EXTEND_NEED_READ_UNTIL_HAVE_DATA = "00--0-read-join-0--00";
+
     public static final String CONFIG_EXPORT_ITEM_FILE_SEPARATOR = "/";
     
     public static final String CONFIG_EXPORT_METADATA = ".meta.yml";
@@ -283,28 +282,4 @@ public class Constants {
     public static final String CONFIG_EXPORT_METADATA_NEW = ".metadata.yml";
     
     public static final int LIMIT_ERROR_CODE = 429;
-    
-    public static final String NACOS_PLUGIN_DATASOURCE_LOG_STATE = "plugin_datasource_log_enabled";
-    
-    public static final String CONFIG_SEARCH_BLUR = "blur";
-    
-    public static final String CONFIG_SEARCH_ACCURATE = "accurate";
-    
-    /**
-     * default nacos encode.
-     */
-    public static final String DEFAULT_NACOS_ENCODE = "UTF-8";
-    
-    public static final String NACOS_PERSIST_ENCODE_KEY = "nacosPersistEncodingKey";
-    
-    static String getPersistEncode() {
-        String persistEncode = System.getenv(NACOS_PERSIST_ENCODE_KEY);
-        if (StringUtils.isBlank(persistEncode)) {
-            persistEncode = System.getProperty(NACOS_PERSIST_ENCODE_KEY);
-            if (StringUtils.isBlank(persistEncode)) {
-                persistEncode = DEFAULT_NACOS_ENCODE;
-            }
-        }
-        return persistEncode;
-    }
 }

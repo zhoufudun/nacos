@@ -27,16 +27,20 @@ import com.alibaba.nacos.common.model.RestResultUtils;
 import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.trace.event.naming.DeregisterServiceTraceEvent;
 import com.alibaba.nacos.common.trace.event.naming.RegisterServiceTraceEvent;
-import com.alibaba.nacos.common.trace.event.naming.UpdateServiceTraceEvent;
+import com.alibaba.nacos.common.utils.IoUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.NumberUtils;
 import com.alibaba.nacos.common.utils.StringUtils;
-import com.alibaba.nacos.core.control.TpsControl;
+import com.alibaba.nacos.core.cluster.ServerMemberManager;
 import com.alibaba.nacos.core.utils.WebUtils;
+import com.alibaba.nacos.naming.core.Service;
+import com.alibaba.nacos.naming.core.ServiceManager;
 import com.alibaba.nacos.naming.core.ServiceOperator;
+import com.alibaba.nacos.naming.core.ServiceOperatorV1Impl;
 import com.alibaba.nacos.naming.core.ServiceOperatorV2Impl;
 import com.alibaba.nacos.naming.core.SubscribeManager;
 import com.alibaba.nacos.naming.core.v2.metadata.ServiceMetadata;
+import com.alibaba.nacos.naming.core.v2.upgrade.UpgradeJudgement;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.Subscriber;
@@ -74,10 +78,22 @@ import java.util.Optional;
 public class ServiceController {
     
     @Autowired
+    protected ServiceManager serviceManager;
+    
+    @Autowired
+    private ServerMemberManager memberManager;
+    
+    @Autowired
     private SubscribeManager subscribeManager;
     
     @Autowired
+    private ServiceOperatorV1Impl serviceOperatorV1;
+    
+    @Autowired
     private ServiceOperatorV2Impl serviceOperatorV2;
+    
+    @Autowired
+    private UpgradeJudgement upgradeJudgement;
     
     @Autowired
     private SelectorManager selectorManager;
@@ -94,7 +110,6 @@ public class ServiceController {
      * @throws Exception exception
      */
     @PostMapping
-    @TpsControl(pointName = "NamingServiceRegister", name = "HttpNamingServiceRegister")
     @Secured(action = ActionTypes.WRITE)
     public String create(@RequestParam(defaultValue = Constants.DEFAULT_NAMESPACE_ID) String namespaceId,
             @RequestParam String serviceName,
@@ -107,8 +122,8 @@ public class ServiceController {
         serviceMetadata.setExtendData(UtilsAndCommons.parseMetadata(metadata));
         serviceMetadata.setEphemeral(false);
         getServiceOperator().create(namespaceId, serviceName, serviceMetadata);
-        NotifyCenter.publishEvent(new RegisterServiceTraceEvent(System.currentTimeMillis(), namespaceId,
-                NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName)));
+        NotifyCenter.publishEvent(new RegisterServiceTraceEvent(System.currentTimeMillis(),
+                namespaceId, NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName)));
         return "ok";
     }
     
@@ -121,14 +136,13 @@ public class ServiceController {
      * @throws Exception exception
      */
     @DeleteMapping
-    @TpsControl(pointName = "NamingServiceDeregister", name = "HttpNamingServiceDeregister")
     @Secured(action = ActionTypes.WRITE)
     public String remove(@RequestParam(defaultValue = Constants.DEFAULT_NAMESPACE_ID) String namespaceId,
             @RequestParam String serviceName) throws Exception {
         
         getServiceOperator().delete(namespaceId, serviceName);
-        NotifyCenter.publishEvent(
-                new DeregisterServiceTraceEvent(System.currentTimeMillis(), namespaceId, "", serviceName));
+        NotifyCenter.publishEvent(new DeregisterServiceTraceEvent(System.currentTimeMillis(),
+                namespaceId, "", serviceName));
         return "ok";
     }
     
@@ -141,7 +155,6 @@ public class ServiceController {
      * @throws NacosException nacos exception
      */
     @GetMapping
-    @TpsControl(pointName = "NamingServiceQuery", name = "HttpNamingServiceQuery")
     @Secured(action = ActionTypes.READ)
     public ObjectNode detail(@RequestParam(defaultValue = Constants.DEFAULT_NAMESPACE_ID) String namespaceId,
             @RequestParam String serviceName) throws NacosException {
@@ -156,7 +169,6 @@ public class ServiceController {
      * @throws Exception exception
      */
     @GetMapping("/list")
-    @TpsControl(pointName = "NamingServiceListQuery", name = "HttpNamingServiceListQuery")
     @Secured(action = ActionTypes.READ)
     public ObjectNode list(HttpServletRequest request) throws Exception {
         final int pageNo = NumberUtils.toInt(WebUtils.required(request, "pageNo"));
@@ -181,52 +193,139 @@ public class ServiceController {
      * @throws Exception exception
      */
     @PutMapping
-    @TpsControl(pointName = "NamingServiceUpdate", name = "HttpNamingServiceUpdate")
     @Secured(action = ActionTypes.WRITE)
     public String update(HttpServletRequest request) throws Exception {
         String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
         String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
-        Map<String, String> metadata = UtilsAndCommons.parseMetadata(
-                WebUtils.optional(request, "metadata", StringUtils.EMPTY));
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setProtectThreshold(NumberUtils.toFloat(WebUtils.required(request, "protectThreshold")));
-        serviceMetadata.setExtendData(metadata);
+        serviceMetadata.setExtendData(
+                UtilsAndCommons.parseMetadata(WebUtils.optional(request, "metadata", StringUtils.EMPTY)));
         serviceMetadata.setSelector(parseSelector(WebUtils.optional(request, "selector", StringUtils.EMPTY)));
-        com.alibaba.nacos.naming.core.v2.pojo.Service service = com.alibaba.nacos.naming.core.v2.pojo.Service.newService(
-                namespaceId, NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName));
+        com.alibaba.nacos.naming.core.v2.pojo.Service service = com.alibaba.nacos.naming.core.v2.pojo.Service
+                .newService(namespaceId, NamingUtils.getGroupName(serviceName),
+                        NamingUtils.getServiceName(serviceName));
         getServiceOperator().update(service, serviceMetadata);
-        NotifyCenter.publishEvent(new UpdateServiceTraceEvent(System.currentTimeMillis(), namespaceId,
-                NamingUtils.getGroupName(serviceName), NamingUtils.getServiceName(serviceName), metadata));
         return "ok";
     }
     
     /**
      * Search service names.
      *
-     * @param namespaceId namespace
-     * @param expr        search pattern
+     * @param namespaceId     namespace
+     * @param expr            search pattern
+     * @param responsibleOnly whether only search responsible service
      * @return search result
      */
     @RequestMapping("/names")
     @Secured(action = ActionTypes.READ)
     public ObjectNode searchService(@RequestParam(defaultValue = StringUtils.EMPTY) String namespaceId,
-            @RequestParam(defaultValue = StringUtils.EMPTY) String expr) throws NacosException {
+            @RequestParam(defaultValue = StringUtils.EMPTY) String expr,
+            @RequestParam(required = false) boolean responsibleOnly) throws NacosException {
         Map<String, Collection<String>> serviceNameMap = new HashMap<>(16);
         int totalCount = 0;
         if (StringUtils.isNotBlank(namespaceId)) {
-            Collection<String> names = getServiceOperator().searchServiceName(namespaceId, expr);
+            Collection<String> names = getServiceOperator().searchServiceName(namespaceId, expr, responsibleOnly);
             serviceNameMap.put(namespaceId, names);
             totalCount = names.size();
         } else {
             for (String each : getServiceOperator().listAllNamespace()) {
-                Collection<String> names = getServiceOperator().searchServiceName(each, expr);
+                Collection<String> names = getServiceOperator().searchServiceName(each, expr, responsibleOnly);
                 serviceNameMap.put(each, names);
                 totalCount += names.size();
             }
         }
         ObjectNode result = JacksonUtils.createEmptyJsonNode();
-        result.replace("META-INF/services", JacksonUtils.transferToJsonNode(serviceNameMap));
+        result.replace("services", JacksonUtils.transferToJsonNode(serviceNameMap));
         result.put("count", totalCount);
+        return result;
+    }
+    
+    /**
+     * Check service status whether latest.
+     *
+     * @param request http request
+     * @return 'ok' if service status if latest, otherwise 'fail' or exception
+     * @throws Exception exception
+     * @deprecated will removed after v2.1
+     */
+    @PostMapping("/status")
+    @Deprecated
+    public String serviceStatus(HttpServletRequest request) throws Exception {
+        
+        String entity = IoUtils.toString(request.getInputStream(), "UTF-8");
+        String value = URLDecoder.decode(entity, "UTF-8");
+        JsonNode json = JacksonUtils.toObj(value);
+        
+        //format: service1@@checksum@@@service2@@checksum
+        String statuses = json.get("statuses").asText();
+        String serverIp = json.get("clientIP").asText();
+        
+        if (!memberManager.hasMember(serverIp)) {
+            throw new NacosException(NacosException.INVALID_PARAM, "ip: " + serverIp + " is not in serverlist");
+        }
+        
+        try {
+            ServiceManager.ServiceChecksum checksums = JacksonUtils
+                    .toObj(statuses, ServiceManager.ServiceChecksum.class);
+            if (checksums == null) {
+                Loggers.SRV_LOG.warn("[DOMAIN-STATUS] receive malformed data: null");
+                return "fail";
+            }
+            
+            for (Map.Entry<String, String> entry : checksums.serviceName2Checksum.entrySet()) {
+                if (entry == null || StringUtils.isEmpty(entry.getKey()) || StringUtils.isEmpty(entry.getValue())) {
+                    continue;
+                }
+                String serviceName = entry.getKey();
+                String checksum = entry.getValue();
+                Service service = serviceManager.getService(checksums.namespaceId, serviceName);
+                
+                if (service == null) {
+                    continue;
+                }
+                
+                service.recalculateChecksum();
+                
+                if (!checksum.equals(service.getChecksum())) {
+                    if (Loggers.SRV_LOG.isDebugEnabled()) {
+                        Loggers.SRV_LOG.debug("checksum of {} is not consistent, remote: {}, checksum: {}, local: {}",
+                                serviceName, serverIp, checksum, service.getChecksum());
+                    }
+                    serviceManager.addUpdatedServiceToQueue(checksums.namespaceId, serviceName, serverIp, checksum);
+                }
+            }
+        } catch (Exception e) {
+            Loggers.SRV_LOG.warn("[DOMAIN-STATUS] receive malformed data: " + statuses, e);
+        }
+        
+        return "ok";
+    }
+    
+    /**
+     * Get checksum of one service.
+     *
+     * @param request http request
+     * @return checksum of one service
+     * @throws Exception exception
+     * @deprecated will removed after v2.1
+     */
+    @PutMapping("/checksum")
+    @Deprecated
+    public ObjectNode checksum(HttpServletRequest request) throws NacosException {
+        
+        String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
+        String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
+        Service service = serviceManager.getService(namespaceId, serviceName);
+        
+        serviceManager.checkServiceIsNull(service, namespaceId, serviceName);
+        
+        service.recalculateChecksum();
+        
+        ObjectNode result = JacksonUtils.createEmptyJsonNode();
+        
+        result.put("checksum", service.getChecksum());
+        
         return result;
     }
     
@@ -245,8 +344,8 @@ public class ServiceController {
         
         String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
         String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
-        boolean aggregation = Boolean.parseBoolean(
-                WebUtils.optional(request, "aggregation", String.valueOf(Boolean.TRUE)));
+        boolean aggregation = Boolean
+                .parseBoolean(WebUtils.optional(request, "aggregation", String.valueOf(Boolean.TRUE)));
         
         ObjectNode result = JacksonUtils.createEmptyJsonNode();
         
@@ -306,6 +405,6 @@ public class ServiceController {
     }
     
     private ServiceOperator getServiceOperator() {
-        return serviceOperatorV2;
+        return upgradeJudgement.isUseGrpcFeatures() ? serviceOperatorV2 : serviceOperatorV1;
     }
 }

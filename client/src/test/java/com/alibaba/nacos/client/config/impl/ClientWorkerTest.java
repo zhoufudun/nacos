@@ -20,7 +20,6 @@ import com.alibaba.nacos.api.config.listener.AbstractListener;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.filter.impl.ConfigFilterChainManager;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -37,9 +36,7 @@ public class ClientWorkerTest {
         Properties prop = new Properties();
         ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
         ServerListManager agent = Mockito.mock(ServerListManager.class);
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
+        ClientWorker clientWorker = new ClientWorker(filter, agent, prop);
         Assert.assertNotNull(clientWorker);
     }
     
@@ -48,9 +45,7 @@ public class ClientWorkerTest {
         Properties prop = new Properties();
         ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
         ServerListManager agent = Mockito.mock(ServerListManager.class);
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
+        ClientWorker clientWorker = new ClientWorker(filter, agent, prop);
         String dataId = "a";
         String group = "b";
         
@@ -78,9 +73,7 @@ public class ClientWorkerTest {
         Properties prop = new Properties();
         ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
         ServerListManager agent = Mockito.mock(ServerListManager.class);
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
+        ClientWorker clientWorker = new ClientWorker(filter, agent, prop);
         
         Listener listener = new AbstractListener() {
             @Override
@@ -124,9 +117,7 @@ public class ClientWorkerTest {
         Properties prop = new Properties();
         ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
         ServerListManager agent = Mockito.mock(ServerListManager.class);
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
+        ClientWorker clientWorker = new ClientWorker(filter, agent, prop);
         ClientWorker.ConfigRpcTransportClient mockClient = Mockito.mock(ClientWorker.ConfigRpcTransportClient.class);
         
         String dataId = "a";
@@ -167,9 +158,7 @@ public class ClientWorkerTest {
         Properties prop = new Properties();
         ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
         ServerListManager agent = Mockito.mock(ServerListManager.class);
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
+        ClientWorker clientWorker = new ClientWorker(filter, agent, prop);
         String dataId = "a";
         String group = "b";
         String tenant = "c";
@@ -182,27 +171,8 @@ public class ClientWorkerTest {
         Assert.assertTrue(o.executor.isShutdown());
         agent1.setAccessible(false);
         
+        Assert.assertTrue(clientWorker.isHealthServer());
         Assert.assertEquals(null, clientWorker.getAgentName());
     }
     
-    @Test
-    public void testIsHealthServer() throws NacosException, NoSuchFieldException, IllegalAccessException {
-        Properties prop = new Properties();
-        ConfigFilterChainManager filter = new ConfigFilterChainManager(new Properties());
-        ServerListManager agent = Mockito.mock(ServerListManager.class);
-        
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ClientWorker clientWorker = new ClientWorker(filter, agent, nacosClientProperties);
-        ClientWorker.ConfigRpcTransportClient client = Mockito.mock(ClientWorker.ConfigRpcTransportClient.class);
-        Mockito.when(client.isHealthServer()).thenReturn(Boolean.TRUE);
-        
-        Field declaredField = ClientWorker.class.getDeclaredField("agent");
-        declaredField.setAccessible(true);
-        declaredField.set(clientWorker, client);
-        
-        Assert.assertEquals(true, clientWorker.isHealthServer());
-        
-        Mockito.when(client.isHealthServer()).thenReturn(Boolean.FALSE);
-        Assert.assertEquals(false, clientWorker.isHealthServer());
-    }
 }

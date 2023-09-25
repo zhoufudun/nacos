@@ -26,7 +26,6 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.api.selector.AbstractSelector;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.client.naming.cache.ServiceInfoHolder;
 import com.alibaba.nacos.client.naming.core.Balancer;
 import com.alibaba.nacos.client.naming.event.InstancesChangeEvent;
@@ -36,7 +35,6 @@ import com.alibaba.nacos.client.naming.remote.NamingClientProxyDelegate;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
 import com.alibaba.nacos.client.naming.utils.InitUtils;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
-import com.alibaba.nacos.client.utils.PreInitUtils;
 import com.alibaba.nacos.client.utils.ValidatorUtils;
 import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.utils.StringUtils;
@@ -55,7 +53,7 @@ import java.util.UUID;
 @SuppressWarnings("PMD.ServiceOrDaoClassShouldEndWithImplRule")
 public class NacosNamingService implements NamingService {
     
-    private static final String DEFAULT_NAMING_LOG_FILE_PATH = "naming.log";
+    private static final String DEFAULT_NAMING_LOG_FILE_PATH =  "naming.log";
     
     private static final String UP = "UP";
     
@@ -87,25 +85,31 @@ public class NacosNamingService implements NamingService {
     }
     
     private void init(Properties properties) throws NacosException {
-        PreInitUtils.asyncPreLoadCostComponent();
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(properties);
-        ValidatorUtils.checkInitParam(nacosClientProperties);
-        this.namespace = InitUtils.initNamespaceForNaming(nacosClientProperties);
+        ValidatorUtils.checkInitParam(properties);
+        this.namespace = InitUtils.initNamespaceForNaming(properties);
         InitUtils.initSerialization();
-        InitUtils.initWebRootContext(nacosClientProperties);
-        initLogName(nacosClientProperties);
-        
+        InitUtils.initWebRootContext(properties);
+        initLogName(properties);
+    
         this.notifierEventScope = UUID.randomUUID().toString();
         this.changeNotifier = new InstancesChangeNotifier(this.notifierEventScope);
         NotifyCenter.registerToPublisher(InstancesChangeEvent.class, 16384);
         NotifyCenter.registerSubscriber(changeNotifier);
-        this.serviceInfoHolder = new ServiceInfoHolder(namespace, this.notifierEventScope, nacosClientProperties);
-        this.clientProxy = new NamingClientProxyDelegate(this.namespace, serviceInfoHolder, nacosClientProperties,
-                changeNotifier);
+        this.serviceInfoHolder = new ServiceInfoHolder(namespace, this.notifierEventScope, properties);
+        this.clientProxy = new NamingClientProxyDelegate(this.namespace, serviceInfoHolder, properties, changeNotifier);
     }
     
-    private void initLogName(NacosClientProperties properties) {
-        logName = properties.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME, DEFAULT_NAMING_LOG_FILE_PATH);
+    private void initLogName(Properties properties) {
+        logName = System.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME);
+        if (StringUtils.isEmpty(logName)) {
+            
+            if (properties != null && StringUtils
+                    .isNotEmpty(properties.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME))) {
+                logName = properties.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME);
+            } else {
+                logName = DEFAULT_NAMING_LOG_FILE_PATH;
+            }
+        }
     }
     
     @Override
@@ -150,13 +154,6 @@ public class NacosNamingService implements NamingService {
             throws NacosException {
         NamingUtils.batchCheckInstanceIsLegal(instances);
         clientProxy.batchRegisterService(serviceName, groupName, instances);
-    }
-    
-    @Override
-    public void batchDeregisterInstance(String serviceName, String groupName, List<Instance> instances)
-            throws NacosException {
-        NamingUtils.batchCheckInstanceIsLegal(instances);
-        clientProxy.batchDeregisterService(serviceName, groupName, instances);
     }
     
     @Override
@@ -243,7 +240,7 @@ public class NacosNamingService implements NamingService {
                 serviceInfo = clientProxy.subscribe(serviceName, groupName, clusterString);
             }
         } else {
-            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, false);
+            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, 0, false);
         }
         List<Instance> list;
         if (serviceInfo == null || CollectionUtils.isEmpty(list = serviceInfo.getHosts())) {
@@ -300,11 +297,11 @@ public class NacosNamingService implements NamingService {
         String clusterString = StringUtils.join(clusters, ",");
         if (subscribe) {
             serviceInfo = serviceInfoHolder.getServiceInfo(serviceName, groupName, clusterString);
-            if (null == serviceInfo || !clientProxy.isSubscribed(serviceName, groupName, clusterString)) {
+            if (null == serviceInfo) {
                 serviceInfo = clientProxy.subscribe(serviceName, groupName, clusterString);
             }
         } else {
-            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, false);
+            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, 0, false);
         }
         return selectInstances(serviceInfo, healthy);
     }
@@ -370,12 +367,13 @@ public class NacosNamingService implements NamingService {
         String clusterString = StringUtils.join(clusters, ",");
         if (subscribe) {
             ServiceInfo serviceInfo = serviceInfoHolder.getServiceInfo(serviceName, groupName, clusterString);
-            if (null == serviceInfo || !clientProxy.isSubscribed(serviceName, groupName, clusterString)) {
+            if (null == serviceInfo) {
                 serviceInfo = clientProxy.subscribe(serviceName, groupName, clusterString);
             }
             return Balancer.RandomByWeight.selectHost(serviceInfo);
         } else {
-            ServiceInfo serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, false);
+            ServiceInfo serviceInfo = clientProxy
+                    .queryInstancesOfService(serviceName, groupName, clusterString, 0, false);
             return Balancer.RandomByWeight.selectHost(serviceInfo);
         }
     }
@@ -467,7 +465,5 @@ public class NacosNamingService implements NamingService {
     public void shutDown() throws NacosException {
         serviceInfoHolder.shutdown();
         clientProxy.shutdown();
-        NotifyCenter.deregisterSubscriber(changeNotifier);
-        
     }
 }

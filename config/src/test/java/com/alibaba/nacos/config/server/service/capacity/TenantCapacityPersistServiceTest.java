@@ -18,11 +18,8 @@ package com.alibaba.nacos.config.server.service.capacity;
 
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.config.server.model.capacity.TenantCapacity;
-import com.alibaba.nacos.persistence.datasource.DataSourceService;
+import com.alibaba.nacos.config.server.service.datasource.DataSourceService;
 import com.alibaba.nacos.config.server.utils.TimeUtils;
-import com.alibaba.nacos.plugin.datasource.MapperManager;
-import com.alibaba.nacos.plugin.datasource.constants.TableConstant;
-import com.alibaba.nacos.plugin.datasource.impl.mysql.TenantCapacityMapperByMySql;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,12 +49,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = MockServletContext.class)
 public class TenantCapacityPersistServiceTest {
+    
+    @InjectMocks
+    private TenantCapacityPersistService service;
     
     @Mock
     private JdbcTemplate jdbcTemplate;
@@ -65,20 +64,12 @@ public class TenantCapacityPersistServiceTest {
     @Mock
     private DataSourceService dataSourceService;
     
-    @Mock
-    private MapperManager mapperManager;
-    
-    @InjectMocks
-    private TenantCapacityPersistService service;
-    
     @Before
     public void setUp() {
+        service = new TenantCapacityPersistService();
         ReflectionTestUtils.setField(service, "jdbcTemplate", jdbcTemplate);
         ReflectionTestUtils.setField(service, "dataSourceService", dataSourceService);
-        ReflectionTestUtils.setField(service, "mapperManager", mapperManager);
         when(dataSourceService.getJdbcTemplate()).thenReturn(jdbcTemplate);
-        doReturn(new TenantCapacityMapperByMySql()).when(mapperManager)
-                .findMapper(any(), eq(TableConstant.TENANT_CAPACITY));
     }
     
     @Test
@@ -99,8 +90,8 @@ public class TenantCapacityPersistServiceTest {
     @Test
     public void testInsertTenantCapacity() {
         
-        when(jdbcTemplate.update(any(PreparedStatementCreator.class),
-                argThat((ArgumentMatcher<GeneratedKeyHolder>) keyHolder -> {
+        when(jdbcTemplate.update(any(PreparedStatementCreator.class), argThat(
+                (ArgumentMatcher<GeneratedKeyHolder>) keyHolder -> {
                     List<Map<String, Object>> keyList = new ArrayList<>();
                     Map<String, Object> keyMap = new HashMap<>();
                     Number number = 1;
@@ -131,7 +122,7 @@ public class TenantCapacityPersistServiceTest {
     
     @Test
     public void testIncrementUsageWithQuotaLimit() {
-        
+    
         TenantCapacity tenantCapacity = new TenantCapacity();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         tenantCapacity.setGmtModified(timestamp);
@@ -143,7 +134,7 @@ public class TenantCapacityPersistServiceTest {
     
     @Test
     public void testIncrementUsage() {
-        
+    
         TenantCapacity tenantCapacity = new TenantCapacity();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         tenantCapacity.setGmtModified(timestamp);
@@ -155,7 +146,7 @@ public class TenantCapacityPersistServiceTest {
     
     @Test
     public void testDecrementUsage() {
-        
+    
         TenantCapacity tenantCapacity = new TenantCapacity();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         tenantCapacity.setGmtModified(timestamp);
@@ -190,15 +181,18 @@ public class TenantCapacityPersistServiceTest {
         String tenant = "test";
         argList.add(tenant);
         
-        when(jdbcTemplate.update(anyString(), any(Object.class))).thenAnswer((Answer<Integer>) invocationOnMock -> {
-            if (invocationOnMock.getArgument(1).equals(quota) && invocationOnMock.getArgument(2).equals(maxSize)
-                    && invocationOnMock.getArgument(3).equals(maxAggrCount) && invocationOnMock.getArgument(4)
-                    .equals(maxAggrSize) && invocationOnMock.getArgument(5).equals(timestamp) && invocationOnMock
-                    .getArgument(6).equals(tenant)) {
-                return 1;
-            }
-            return 0;
-        });
+        when(jdbcTemplate.update(anyString(), any(Object.class))).thenAnswer(
+                (Answer<Integer>) invocationOnMock -> {
+                    if (invocationOnMock.getArgument(1).equals(quota)
+                            && invocationOnMock.getArgument(2).equals(maxSize)
+                            && invocationOnMock.getArgument(3).equals(maxAggrCount)
+                            && invocationOnMock.getArgument(4).equals(maxAggrSize)
+                            && invocationOnMock.getArgument(5).equals(timestamp)
+                            && invocationOnMock.getArgument(6).equals(tenant)) {
+                        return 1;
+                    }
+                    return 0;
+                });
         Assert.assertTrue(service.updateTenantCapacity(tenant, quota, maxSize, maxAggrCount, maxAggrSize));
         
         timeUtilsMockedStatic.close();
@@ -214,12 +208,14 @@ public class TenantCapacityPersistServiceTest {
         String tenant = "test2";
         argList.add(tenant);
         
-        when(jdbcTemplate.update(anyString(), any(Object.class))).thenAnswer((Answer<Integer>) invocationOnMock -> {
-            if (invocationOnMock.getArgument(1).equals(quota) && invocationOnMock.getArgument(3).equals(tenant)) {
-                return 1;
-            }
-            return 0;
-        });
+        when(jdbcTemplate.update(anyString(), any(Object.class))).thenAnswer(
+                (Answer<Integer>) invocationOnMock -> {
+                    if (invocationOnMock.getArgument(1).equals(quota)
+                            && invocationOnMock.getArgument(3).equals(tenant)) {
+                        return 1;
+                    }
+                    return 0;
+                });
         Assert.assertTrue(service.updateQuota(tenant, quota));
     }
     
@@ -243,8 +239,7 @@ public class TenantCapacityPersistServiceTest {
         long lastId = 1;
         int pageSize = 1;
         
-        when(jdbcTemplate.query(anyString(), eq(new Object[] {lastId, pageSize}), any(RowMapper.class)))
-                .thenReturn(list);
+        when(jdbcTemplate.query(anyString(), eq(new Object[] {lastId, pageSize}), any(RowMapper.class))).thenReturn(list);
         List<TenantCapacity> ret = service.getCapacityList4CorrectUsage(lastId, pageSize);
         
         Assert.assertEquals(list.size(), ret.size());
@@ -257,4 +252,5 @@ public class TenantCapacityPersistServiceTest {
         when(jdbcTemplate.update(any(PreparedStatementCreator.class))).thenReturn(1);
         Assert.assertTrue(service.deleteTenantCapacity("test"));
     }
+    
 }

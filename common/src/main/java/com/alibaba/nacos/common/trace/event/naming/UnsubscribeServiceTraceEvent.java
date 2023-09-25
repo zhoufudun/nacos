@@ -18,7 +18,6 @@ package com.alibaba.nacos.common.trace.event.naming;
 
 /**
  * Naming unsubscribe service trace event.
- *
  * @author yanda
  */
 public class UnsubscribeServiceTraceEvent extends NamingTraceEvent {
@@ -31,8 +30,8 @@ public class UnsubscribeServiceTraceEvent extends NamingTraceEvent {
         return clientIp;
     }
     
-    public UnsubscribeServiceTraceEvent(long eventTime, String clientIp, String serviceNamespace, String serviceGroup,
-            String serviceName) {
+    public UnsubscribeServiceTraceEvent(long eventTime, String clientIp, String serviceNamespace,
+            String serviceGroup, String serviceName) {
         super("UNSUBSCRIBE_SERVICE_TRACE_EVENT", eventTime, serviceNamespace, serviceGroup, serviceName);
         this.clientIp = clientIp;
     }

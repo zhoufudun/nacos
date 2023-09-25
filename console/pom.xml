@@ -26,13 +26,15 @@
     <artifactId>nacos-console</artifactId>
     <packaging>jar</packaging>
     <name>nacos-console ${project.version}</name>
-    <url>https://nacos.io</url>
+    <url>http://nacos.io</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>nacos-config</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -41,16 +43,12 @@
     
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
-            <artifactId>nacos-default-plugin-all</artifactId>
+            <artifactId>nacos-plugin-default-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>nacos-istio</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>nacos-prometheus</artifactId>
         </dependency>
         
         <!-- log -->

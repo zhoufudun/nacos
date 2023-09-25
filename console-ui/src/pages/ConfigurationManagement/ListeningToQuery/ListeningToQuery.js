@@ -32,7 +32,6 @@ import {
 import QueryResult from '../../../components/QueryResult';
 
 import './index.scss';
-import PageTitle from '../../../components/PageTitle';
 
 const FormItem = Form.Item;
 const { Row, Col } = Grid;
@@ -171,15 +170,7 @@ class ListeningToQuery extends React.Component {
     });
   };
 
-  setNowNameSpace = (nowNamespaceName, nowNamespaceId, nowNamespaceDesc) =>
-    this.setState({
-      nowNamespaceName,
-      nowNamespaceId,
-      nowNamespaceDesc,
-    });
-
   render() {
-    const { nowNamespaceName, nowNamespaceId, nowNamespaceDesc } = this.state;
     const { locale = {} } = this.props;
     const { init, getValue } = this.field;
     this.init = init;
@@ -204,17 +195,7 @@ class ListeningToQuery extends React.Component {
           tip="Loading..."
           color="#333"
         >
-          <PageTitle
-            title={locale.listenerQuery}
-            desc={nowNamespaceDesc}
-            namespaceId={nowNamespaceId}
-            namespaceName={nowNamespaceName}
-            nameSpace
-          />
-          <RegionGroup
-            setNowNameSpace={this.setNowNameSpace}
-            namespaceCallBack={this.getQueryLater}
-          />
+          <RegionGroup left={locale.listenerQuery} namespaceCallBack={this.getQueryLater} />
           <Row className="demo-row" style={{ marginBottom: 10, padding: 0 }}>
             <Col span="24">
               <Form inline field={this.field}>

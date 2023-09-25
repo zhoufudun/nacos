@@ -26,11 +26,6 @@ const getConfigs = params => dispatch =>
     .get('v1/cs/configs', { params })
     .then(data => dispatch({ type: GET_CONFIGURATION, data }));
 
-const getConfigsV2 = params => dispatch =>
-  request
-    .get('v2/cs/config/searchDetail', { params })
-    .then(data => dispatch({ type: GET_CONFIGURATION, data }));
-
 export default (state = initialState, action) => {
   switch (action.type) {
     case GET_CONFIGURATION:
@@ -40,4 +35,4 @@ export default (state = initialState, action) => {
   }
 };
 
-export { getConfigs, getConfigsV2 };
+export { getConfigs };

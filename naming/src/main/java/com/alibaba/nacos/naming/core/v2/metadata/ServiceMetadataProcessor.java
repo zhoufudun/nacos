@@ -16,7 +16,6 @@
 
 package com.alibaba.nacos.naming.core.v2.metadata;
 
-import com.alibaba.nacos.common.utils.TypeUtils;
 import com.alibaba.nacos.consistency.DataOperation;
 import com.alibaba.nacos.consistency.SerializeFactory;
 import com.alibaba.nacos.consistency.Serializer;
@@ -26,11 +25,14 @@ import com.alibaba.nacos.consistency.entity.Response;
 import com.alibaba.nacos.consistency.entity.WriteRequest;
 import com.alibaba.nacos.consistency.snapshot.SnapshotOperation;
 import com.alibaba.nacos.core.distributed.ProtocolManager;
-import com.alibaba.nacos.naming.constants.Constants;
+import com.alibaba.nacos.core.utils.Loggers;
 import com.alibaba.nacos.naming.core.v2.ServiceManager;
 import com.alibaba.nacos.naming.core.v2.index.ServiceStorage;
 import com.alibaba.nacos.naming.core.v2.pojo.Service;
-import com.alibaba.nacos.naming.misc.Loggers;
+import com.alibaba.nacos.naming.core.v2.upgrade.doublewrite.delay.DoubleWriteEventListener;
+import com.alibaba.nacos.naming.constants.Constants;
+import com.alibaba.nacos.sys.utils.ApplicationUtils;
+import com.alibaba.nacos.common.utils.TypeUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
@@ -83,9 +85,9 @@ public class ServiceMetadataProcessor extends RequestProcessor4CP {
     
     @Override
     public Response onApply(WriteRequest request) {
+        MetadataOperation<ServiceMetadata> op = serializer.deserialize(request.getData().toByteArray(), processType);
         readLock.lock();
         try {
-            MetadataOperation<ServiceMetadata> op = serializer.deserialize(request.getData().toByteArray(), processType);
             switch (DataOperation.valueOf(request.getOperation())) {
                 case ADD:
                     addClusterMetadataToService(op);
@@ -102,9 +104,8 @@ public class ServiceMetadataProcessor extends RequestProcessor4CP {
             }
             return Response.newBuilder().setSuccess(true).build();
         } catch (Exception e) {
-            Loggers.RAFT.error("onApply {} service metadata operation failed. ", request.getOperation(), e);
-            String errorMessage = null == e.getMessage() ? e.getClass().getName() : e.getMessage();
-            return Response.newBuilder().setSuccess(false).setErrMsg(errorMessage).build();
+            Loggers.RAFT.error("apply service metadata error: ", e);
+            return Response.newBuilder().setSuccess(false).setErrMsg(e.getMessage()).build();
         } finally {
             readLock.unlock();
         }
@@ -120,6 +121,7 @@ public class ServiceMetadataProcessor extends RequestProcessor4CP {
             Service singleton = ServiceManager.getInstance().getSingleton(service);
             namingMetadataManager.updateServiceMetadata(singleton, op.getMetadata());
         }
+        doubleWriteMetadata(service, false);
     }
     
     private void updateServiceMetadata(MetadataOperation<ServiceMetadata> op) {
@@ -134,6 +136,18 @@ public class ServiceMetadataProcessor extends RequestProcessor4CP {
             Service singleton = ServiceManager.getInstance().getSingleton(service);
             namingMetadataManager.updateServiceMetadata(singleton, op.getMetadata());
         }
+        doubleWriteMetadata(service, false);
+    }
+    
+    /**
+     * Only for downgrade to v1.x.
+     *
+     * @param service double write service
+     * @param remove  is removing service of v2
+     * @deprecated will remove in v2.1.x
+     */
+    private void doubleWriteMetadata(Service service, boolean remove) {
+        ApplicationUtils.getBean(DoubleWriteEventListener.class).doubleWriteMetadataToV1(service, remove);
     }
     
     /**
@@ -163,6 +177,7 @@ public class ServiceMetadataProcessor extends RequestProcessor4CP {
             service = removed;
         }
         serviceStorage.removeData(service);
+        doubleWriteMetadata(service, true);
     }
     
     @Override

@@ -62,7 +62,6 @@ const I18N_CONF = {
     userList: 'User List',
     roleManagement: 'Role Management',
     privilegeManagement: 'Privilege Management',
-    consoleClosed: 'Console Closed',
   },
   Password: {
     passwordNotConsistent: 'The passwords are not consistent',
@@ -149,9 +148,6 @@ const I18N_CONF = {
     extendInfo: 'NodeMetaData',
     operation: 'Operation',
     leave: 'Leave',
-    leaveSucc: 'Leave successfully',
-    leaveFail: 'Leave failed',
-    leavePrompt: 'prompt',
     confirm: 'Confirm',
     confirmTxt: 'Confirm that you want to go offline this cluster node?',
   },
@@ -266,7 +262,6 @@ const I18N_CONF = {
     sourceIp: 'Source IP',
     configureContent: 'Configuration Content',
     back: 'Back',
-    namespace: 'Namespace',
   },
   DashboardCard: {
     importantReminder0: 'Important reminder',
@@ -294,10 +289,9 @@ const I18N_CONF = {
     successfulEntry: 'Successful Entry',
     unprocessedEntry: 'Unprocessed Entry',
     pubNoData: 'No results found.',
-    configurationManagement8: 'Configuration Management',
+    configurationManagement8: 'configuration management',
     queryResults: 'Found',
     articleMeetRequirements: 'configuration items',
-    fuzzydMode: 'Default fuzzy query mode',
     fuzzyd: "Add wildcard '*' for fuzzy query",
     defaultFuzzyd: 'Default fuzzy query mode opened',
     fuzzyg: "Add wildcard '*' for fuzzy query",
@@ -307,8 +301,6 @@ const I18N_CONF = {
     app1: 'Enter App Name\n',
     tags: 'Tags',
     pleaseEnterTag: 'Enter Tag',
-    configDetailLabel: 'DetailSearch',
-    configDetailH: 'search config detail',
     application: 'Application',
     operation: 'Operation',
     export: 'Export query results',
@@ -364,7 +356,6 @@ const I18N_CONF = {
     delSuccessMsg: 'delete successful',
     cloneEditableTitle: 'Modify Data Id and Group (optional)',
     authFail: 'Auth failed',
-    copyNamespaceID: 'Copy namespace ID',
   },
   NewConfig: {
     newListingMain: 'Create Configuration',
@@ -394,7 +385,6 @@ const I18N_CONF = {
     confirmSyanx: 'The configuration information may has a syntax error. Are you sure to submit?',
     dataIdExists: 'Configuration already exists. Enter a new Data ID and Group name.',
     dataRequired: 'Data cannot be empty, submission failed',
-    namespace: 'Namespace',
   },
   CloneDialog: {
     terminate: 'Terminate',
@@ -456,7 +446,6 @@ const I18N_CONF = {
     dialogCurrentArea: 'Current Value',
     dialogOriginalArea: 'Original Value',
     publishFailed403: 'Publish failed. No operation permission',
-    namespace: 'Namespace',
   },
   EditorNameSpace: {
     notice: 'Notice',
@@ -555,7 +544,6 @@ const I18N_CONF = {
     groupInput: 'Please Enter Group',
     namespaceSelect: 'Please Select namespace',
     configNotFind: 'The Configuration is not found, Please select again',
-    namespace: 'Namespace',
   },
   ConfigRollback: {
     rollBack: 'Roll Back',
@@ -573,7 +561,6 @@ const I18N_CONF = {
     update: 'Update',
     insert: 'Insert',
     additionalRollbackMessage: 'This operation will delete the below config!',
-    namespace: 'Namespace',
   },
   UserManagement: {
     userManagement: 'User Management',
@@ -586,7 +573,6 @@ const I18N_CONF = {
     operation: 'Operation',
     refresh: 'Refresh',
     query: 'Search',
-    fuzzydMode: 'Default fuzzy query mode',
     defaultFuzzyd: 'Default fuzzy query mode opened',
     fuzzyd: "Add wildcard '*' for fuzzy query",
   },
@@ -623,7 +609,6 @@ const I18N_CONF = {
     deleteRole: 'Delete',
     deleteRoleTip: 'Do you want to delete this role?',
     refresh: 'Refresh',
-    fuzzydMode: 'Default fuzzy query mode',
     defaultFuzzyd: 'Default fuzzy query mode opened',
     fuzzyd: "Add wildcard '*' for fuzzy query",
     query: 'Search',
@@ -650,7 +635,6 @@ const I18N_CONF = {
     writeOnly: 'write only',
     readWrite: 'Read and write',
     refresh: 'Refresh',
-    fuzzydMode: 'Default fuzzy query mode',
     defaultFuzzyd: 'Default fuzzy query mode opened',
     fuzzyd: "Add wildcard '*' for fuzzy query",
     query: 'Search',
@@ -670,9 +654,6 @@ const I18N_CONF = {
     writeOnly: 'write only',
     readWrite: 'Read and write',
   },
-  Components: {
-      copySuccessfully: 'Success copied!',
-  }
 };
 
 export default I18N_CONF;

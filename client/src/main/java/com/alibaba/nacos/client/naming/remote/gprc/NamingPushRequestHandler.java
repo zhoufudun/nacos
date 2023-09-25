@@ -39,8 +39,8 @@ public class NamingPushRequestHandler implements ServerRequestHandler {
     @Override
     public Response requestReply(Request request) {
         if (request instanceof NotifySubscriberRequest) {
-            NotifySubscriberRequest notifyRequest = (NotifySubscriberRequest) request;
-            serviceInfoHolder.processServiceInfo(notifyRequest.getServiceInfo());
+            NotifySubscriberRequest notifyResponse = (NotifySubscriberRequest) request;
+            serviceInfoHolder.processServiceInfo(notifyResponse.getServiceInfo());
             return new NotifySubscriberResponse();
         }
         return null;

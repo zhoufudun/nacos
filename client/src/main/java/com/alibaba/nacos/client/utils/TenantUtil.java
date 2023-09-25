@@ -17,7 +17,6 @@
 package com.alibaba.nacos.client.utils;
 
 import com.alibaba.nacos.api.SystemPropertyKeyConst;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.common.utils.StringUtils;
 
 /**
@@ -36,7 +35,7 @@ public class TenantUtil {
     private static final String ACM_NAMESPACE_PROPERTY = "acm.namespace";
     
     static {
-        USER_TENANT = NacosClientProperties.PROTOTYPE.getProperty(TENANT_ID, "");
+        USER_TENANT = System.getProperty(TENANT_ID, "");
     }
     
     /**
@@ -52,7 +51,7 @@ public class TenantUtil {
         String tmp = USER_TENANT;
         
         if (StringUtils.isBlank(USER_TENANT)) {
-            tmp = NacosClientProperties.PROTOTYPE.getProperty(ACM_NAMESPACE_PROPERTY, DEFAULT_ACM_NAMESPACE);
+            tmp = System.getProperty(ACM_NAMESPACE_PROPERTY, DEFAULT_ACM_NAMESPACE);
         }
         
         return tmp;
@@ -67,7 +66,7 @@ public class TenantUtil {
         String tmp = USER_TENANT;
         
         if (StringUtils.isBlank(USER_TENANT)) {
-            tmp = NacosClientProperties.PROTOTYPE.getProperty(SystemPropertyKeyConst.ANS_NAMESPACE);
+            tmp = System.getProperty(SystemPropertyKeyConst.ANS_NAMESPACE);
         }
         return tmp;
     }

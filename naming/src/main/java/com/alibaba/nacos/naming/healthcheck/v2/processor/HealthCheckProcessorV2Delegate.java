@@ -18,6 +18,7 @@ package com.alibaba.nacos.naming.healthcheck.v2.processor;
 
 import com.alibaba.nacos.naming.core.v2.metadata.ClusterMetadata;
 import com.alibaba.nacos.naming.core.v2.pojo.Service;
+import com.alibaba.nacos.naming.healthcheck.NoneHealthCheckProcessor;
 import com.alibaba.nacos.naming.healthcheck.extend.HealthCheckExtendProvider;
 import com.alibaba.nacos.naming.healthcheck.extend.HealthCheckProcessorExtendV2;
 import com.alibaba.nacos.naming.healthcheck.v2.HealthCheckTaskV2;
@@ -40,7 +41,7 @@ public class HealthCheckProcessorV2Delegate implements HealthCheckProcessorV2 {
     private final Map<String, HealthCheckProcessorV2> healthCheckProcessorMap = new HashMap<>();
     
     public HealthCheckProcessorV2Delegate(HealthCheckExtendProvider provider,
-            HealthCheckProcessorExtendV2 healthCheckProcessorExtend) {
+                                          HealthCheckProcessorExtendV2 healthCheckProcessorExtend) {
         provider.setHealthCheckProcessorExtend(healthCheckProcessorExtend);
         provider.init();
     }

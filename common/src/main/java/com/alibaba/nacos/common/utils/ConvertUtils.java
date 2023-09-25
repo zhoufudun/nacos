@@ -24,9 +24,6 @@ import java.util.Set;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class ConvertUtils {
-
-    private ConvertUtils() {
-    }
     
     private static final String NULL_STR = "null";
     

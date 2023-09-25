@@ -68,6 +68,9 @@ public class DefaultRequestFuture implements RequestFuture {
         return timeStamp;
     }
     
+    public DefaultRequestFuture() {
+    }
+    
     public DefaultRequestFuture(String connectionId, String requestId) {
         this(connectionId, requestId, null, null);
     }
@@ -164,9 +167,7 @@ public class DefaultRequestFuture implements RequestFuture {
             if (timeoutInnerTrigger != null) {
                 timeoutInnerTrigger.triggerOnTimeout();
             }
-            throw new TimeoutException(
-                    "request timeout after " + timeout + " milliseconds, requestId=" + requestId + ", connectionId="
-                            + connectionId);
+            throw new TimeoutException("request timeout after " + timeout + " milliseconds, requestId=" + requestId);
         }
     }
     
@@ -190,8 +191,7 @@ public class DefaultRequestFuture implements RequestFuture {
         @Override
         public void run() {
             setFailResult(new TimeoutException(
-                    "Timeout After " + requestCallBack.getTimeout() + " milliseconds, requestId=" + requestId
-                            + ", connectionId=" + connectionId));
+                    "Timeout After " + requestCallBack.getTimeout() + " milliseconds,requestId =" + requestId));
             if (timeoutInnerTrigger != null) {
                 timeoutInnerTrigger.triggerOnTimeout();
             }
@@ -203,7 +203,7 @@ public class DefaultRequestFuture implements RequestFuture {
         /**
          * triggered on timeout .
          */
-        void triggerOnTimeout();
+        public void triggerOnTimeout();
         
     }
     
@@ -215,4 +215,14 @@ public class DefaultRequestFuture implements RequestFuture {
     public String getConnectionId() {
         return connectionId;
     }
+    
+    /**
+     * Setter method for property <tt>timeoutFuture</tt>.
+     *
+     * @param timeoutFuture value to be assigned to property timeoutFuture
+     */
+    public void setTimeoutFuture(ScheduledFuture timeoutFuture) {
+        this.timeoutFuture = timeoutFuture;
+    }
+    
 }

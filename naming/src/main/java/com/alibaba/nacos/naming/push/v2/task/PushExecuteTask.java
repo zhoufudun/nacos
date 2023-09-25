@@ -64,11 +64,7 @@ public class PushExecuteTask extends AbstractExecuteTask {
                     // means this client has disconnect
                     continue;
                 }
-                Subscriber subscriber = client.getSubscriber(service);
-                // skip if null
-                if (subscriber == null) {
-                    continue;
-                }
+                Subscriber subscriber = clientManager.getClient(each).getSubscriber(service);
                 delayTaskEngine.getPushExecutor().doPushWithCallback(each, subscriber, wrapper,
                         new ServicePushCallback(each, subscriber, wrapper.getOriginalData(), delayTask.isPushToAll()));
             }

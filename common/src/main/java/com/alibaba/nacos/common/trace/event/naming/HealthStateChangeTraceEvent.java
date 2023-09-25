@@ -20,22 +20,21 @@ import com.alibaba.nacos.common.trace.HealthCheckType;
 
 /**
  * Naming instance health state change trace event.
- *
  * @author yanda
  */
 public class HealthStateChangeTraceEvent extends NamingTraceEvent {
     
     private static final long serialVersionUID = 6966396191118694597L;
     
-    private final String instanceIp;
+    private String instanceIp;
     
-    private final int instancePort;
+    private int instancePort;
     
-    private final boolean isHealthy;
+    private boolean isHealthy;
     
-    private final HealthCheckType healthCheckType;
+    private HealthCheckType healthCheckType;
     
-    private final String healthStateChangeReason;
+    private String  healthStateChangeReason;
     
     public String getInstanceIp() {
         return instanceIp;
@@ -61,8 +60,8 @@ public class HealthStateChangeTraceEvent extends NamingTraceEvent {
         return healthStateChangeReason;
     }
     
-    public HealthStateChangeTraceEvent(long eventTime, String serviceNamespace, String serviceGroup, String serviceName,
-            String instanceIp, int instancePort, boolean isHealthy, String healthStateChangeReason) {
+    public HealthStateChangeTraceEvent(long eventTime, String serviceNamespace, String serviceGroup,
+            String serviceName, String instanceIp, int instancePort, boolean isHealthy, String healthStateChangeReason) {
         super("HEALTH_STATE_CHANGE_TRACE_EVENT", eventTime, serviceNamespace, serviceGroup, serviceName);
         this.instanceIp = instanceIp;
         this.instancePort = instancePort;

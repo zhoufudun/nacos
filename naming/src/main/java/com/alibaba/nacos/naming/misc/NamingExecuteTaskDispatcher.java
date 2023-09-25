@@ -46,8 +46,4 @@ public class NamingExecuteTaskDispatcher {
     public String workersStatus() {
         return executeEngine.workersStatus();
     }
-    
-    public void destroy() throws Exception {
-        executeEngine.shutdown();
-    }
 }

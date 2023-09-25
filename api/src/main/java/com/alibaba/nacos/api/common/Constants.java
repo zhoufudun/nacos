@@ -86,9 +86,9 @@ public class Constants {
     public static final String USERNAME = "username";
     
     public static final String TOKEN_REFRESH_WINDOW = "tokenRefreshWindow";
-    
+
     public static final Integer SDK_GRPC_PORT_DEFAULT_OFFSET = 1000;
-    
+
     public static final Integer CLUSTER_GRPC_PORT_DEFAULT_OFFSET = 1001;
     
     /**
@@ -217,19 +217,12 @@ public class Constants {
     public static final String CLUSTER_NAME_PATTERN_STRING = "^[0-9a-zA-Z-]+$";
     
     /**
-     * millisecond.
-     */
-    public static final long DEFAULT_REDO_DELAY_TIME = 3000L;
-    
-    public static final int DEFAULT_REDO_THREAD_COUNT = 1;
-    
-    /**
      * The constants in config directory.
      */
     public static class Config {
         
         public static final String CONFIG_MODULE = "config";
-        
+    
         public static final String NOTIFY_HEADER = "notify";
     }
     
@@ -256,12 +249,8 @@ public class Constants {
      */
     public static class Exception {
         
-        public static final int SERIALIZE_ERROR_CODE = 100;
-        
         public static final int DESERIALIZE_ERROR_CODE = 101;
-    
-        public static final int FIND_DATASOURCE_ERROR_CODE = 102;
-    
-        public static final int FIND_TABLE_ERROR_CODE = 103;
+        
+        public static final int SERIALIZE_ERROR_CODE = 100;
     }
 }

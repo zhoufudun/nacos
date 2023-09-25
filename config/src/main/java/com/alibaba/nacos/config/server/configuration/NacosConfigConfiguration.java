@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2023 Alibaba Group Holding Ltd.
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package com.alibaba.nacos.config.server.configuration;
 
-import com.alibaba.nacos.config.server.filter.CircuitFilter;
-import com.alibaba.nacos.config.server.filter.ConfigParamCheckFilter;
 import com.alibaba.nacos.config.server.filter.NacosWebFilter;
-import com.alibaba.nacos.persistence.configuration.condition.ConditionDistributedEmbedStorage;
+import com.alibaba.nacos.config.server.filter.CurcuitFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -35,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 public class NacosConfigConfiguration {
     
     @Bean
-    public FilterRegistrationBean<NacosWebFilter> nacosWebFilterRegistration() {
+    public FilterRegistrationBean nacosWebFilterRegistration() {
         FilterRegistrationBean<NacosWebFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(nacosWebFilter());
         registration.addUrlPatterns("/v1/cs/*");
@@ -51,8 +49,8 @@ public class NacosConfigConfiguration {
     
     @Conditional(ConditionDistributedEmbedStorage.class)
     @Bean
-    public FilterRegistrationBean<CircuitFilter> transferToLeaderRegistration() {
-        FilterRegistrationBean<CircuitFilter> registration = new FilterRegistrationBean<>();
+    public FilterRegistrationBean transferToLeaderRegistration() {
+        FilterRegistrationBean<CurcuitFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(transferToLeader());
         registration.addUrlPatterns("/v1/cs/*");
         registration.setName("curcuitFilter");
@@ -62,23 +60,8 @@ public class NacosConfigConfiguration {
     
     @Conditional(ConditionDistributedEmbedStorage.class)
     @Bean
-    public CircuitFilter transferToLeader() {
-        return new CircuitFilter();
+    public CurcuitFilter transferToLeader() {
+        return new CurcuitFilter();
     }
     
-    @Bean
-    public FilterRegistrationBean<ConfigParamCheckFilter> configParamCheckFilterRegistration() {
-        FilterRegistrationBean<ConfigParamCheckFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(configParamCheckFilter());
-        registration.addUrlPatterns("/v1/cs/*");
-        registration.addUrlPatterns("/v2/cs/*");
-        registration.setName("configparamcheckfilter");
-        registration.setOrder(8);
-        return registration;
-    }
-    
-    @Bean
-    public ConfigParamCheckFilter configParamCheckFilter() {
-        return new ConfigParamCheckFilter();
-    }
 }

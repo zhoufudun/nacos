@@ -69,10 +69,6 @@ public class Chooser<K, T> {
             }
         }
         
-        if (ref.weights.length == 0) {
-            throw new IllegalStateException("Cumulative Weight wrong , the array length is equal to 0.");
-        }
-        
         /* This should never happen, but it ensures we will return a correct
          * object in case there is some floating point inequality problem
          * wrt the cumulative probabilities. */
@@ -121,17 +117,15 @@ public class Chooser<K, T> {
         private double[] weights;
         
         public Ref(List<Pair<T>> itemsWithWeight) {
-            if (itemsWithWeight != null) {
-                this.itemsWithWeight = itemsWithWeight;
-            }
+            this.itemsWithWeight = itemsWithWeight;
         }
         
         /**
          * Refresh.
          */
         public void refresh() {
-            double originWeightSum = 0;
-            int size = 0;
+            Double originWeightSum = (double) 0;
+            
             for (Pair<T> item : itemsWithWeight) {
                 
                 double weight = item.weight();
@@ -148,12 +142,9 @@ public class Chooser<K, T> {
                     weight = 1.0D;
                 }
                 originWeightSum += weight;
-                size++;
             }
             
-            weights = new double[size];
-            double exactWeight;
-            double randomRange = 0D;
+            double[] exactWeights = new double[items.size()];
             int index = 0;
             for (Pair<T> item : itemsWithWeight) {
                 double singleWeight = item.weight();
@@ -161,10 +152,14 @@ public class Chooser<K, T> {
                 if (singleWeight <= 0) {
                     continue;
                 }
-                
-                exactWeight = singleWeight / originWeightSum;
-                weights[index] = randomRange + exactWeight;
-                randomRange = weights[index++];
+                exactWeights[index++] = singleWeight / originWeightSum;
+            }
+            
+            weights = new double[items.size()];
+            double randomRange = 0D;
+            for (int i = 0; i < index; i++) {
+                weights[i] = randomRange + exactWeights[i];
+                randomRange += exactWeights[i];
             }
             
             double doublePrecisionDelta = 0.0001;

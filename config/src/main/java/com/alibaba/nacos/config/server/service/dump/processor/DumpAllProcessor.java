@@ -21,13 +21,13 @@ import com.alibaba.nacos.common.utils.MD5Utils;
 import com.alibaba.nacos.config.server.constant.Constants;
 import com.alibaba.nacos.common.task.NacosTaskProcessor;
 import com.alibaba.nacos.config.server.model.ConfigInfoWrapper;
-import com.alibaba.nacos.persistence.model.Page;
+import com.alibaba.nacos.config.server.model.Page;
 import com.alibaba.nacos.config.server.service.AggrWhitelist;
 import com.alibaba.nacos.config.server.service.ClientIpWhiteList;
 import com.alibaba.nacos.config.server.service.ConfigCacheService;
 import com.alibaba.nacos.config.server.service.SwitchService;
 import com.alibaba.nacos.config.server.service.dump.DumpService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.GroupKey2;
 import com.alibaba.nacos.config.server.utils.LogUtil;
 
@@ -43,15 +43,15 @@ public class DumpAllProcessor implements NacosTaskProcessor {
     
     public DumpAllProcessor(DumpService dumpService) {
         this.dumpService = dumpService;
-        this.configInfoPersistService = dumpService.getConfigInfoPersistService();
+        this.persistService = dumpService.getPersistService();
     }
     
     @Override
     public boolean process(NacosTask task) {
-        long currentMaxId = configInfoPersistService.findConfigMaxId();
+        long currentMaxId = persistService.findConfigMaxId();
         long lastMaxId = 0;
         while (lastMaxId < currentMaxId) {
-            Page<ConfigInfoWrapper> page = configInfoPersistService.findAllConfigInfoFragment(lastMaxId, PAGE_SIZE);
+            Page<ConfigInfoWrapper> page = persistService.findAllConfigInfoFragment(lastMaxId, PAGE_SIZE);
             if (page != null && page.getPageItems() != null && !page.getPageItems().isEmpty()) {
                 for (ConfigInfoWrapper cf : page.getPageItems()) {
                     long id = cf.getId();
@@ -64,7 +64,7 @@ public class DumpAllProcessor implements NacosTaskProcessor {
                         ClientIpWhiteList.load(cf.getContent());
                     }
                     
-                    if (cf.getDataId().equals(SwitchService.SWITCH_META_DATA_ID)) {
+                    if (cf.getDataId().equals(SwitchService.SWITCH_META_DATAID)) {
                         SwitchService.load(cf.getContent());
                     }
     
@@ -89,5 +89,5 @@ public class DumpAllProcessor implements NacosTaskProcessor {
     
     final DumpService dumpService;
     
-    final ConfigInfoPersistService configInfoPersistService;
+    final PersistService persistService;
 }

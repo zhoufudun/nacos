@@ -173,8 +173,8 @@ public class ClientTrackService {
             return record;
         }
         ClientRecord clientRecord = new ClientRecord(clientIp);
-        record = clientRecords.putIfAbsent(clientIp, clientRecord);
-        return null == record ? clientRecord : record;
+        clientRecords.putIfAbsent(clientIp, clientRecord);
+        return clientRecord;
     }
     
     public static void refreshClientRecord() {

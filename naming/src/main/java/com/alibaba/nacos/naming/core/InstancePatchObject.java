@@ -47,6 +47,11 @@ public class InstancePatchObject {
         this.port = port;
     }
     
+    /**
+     * Will be deprecated in 2.x.
+     */
+    private String app;
+    
     public String getCluster() {
         return cluster;
     }
@@ -89,5 +94,13 @@ public class InstancePatchObject {
     
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+    
+    public String getApp() {
+        return app;
+    }
+    
+    public void setApp(String app) {
+        this.app = app;
     }
 }

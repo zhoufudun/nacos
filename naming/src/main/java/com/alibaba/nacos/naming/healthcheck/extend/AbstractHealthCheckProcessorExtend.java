@@ -34,7 +34,7 @@ public abstract class AbstractHealthCheckProcessorExtend implements BeanFactoryA
     protected SingletonBeanRegistry registry;
 
     /**
-     * Add HealthCheckProcessorV2.
+     * Add HealthCheckProcessor Or HealthCheckProcessorV2.
      *
      * @param origin Origin Checker Type
      * @return Extend Processor Type

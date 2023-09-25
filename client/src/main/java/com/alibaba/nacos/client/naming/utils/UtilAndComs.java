@@ -17,6 +17,7 @@
 package com.alibaba.nacos.client.naming.utils;
 
 import com.alibaba.nacos.common.utils.ThreadUtils;
+import com.alibaba.nacos.common.utils.VersionUtils;
 
 /**
  * Util and constants.
@@ -24,6 +25,10 @@ import com.alibaba.nacos.common.utils.ThreadUtils;
  * @author xuanyin.zy
  */
 public class UtilAndComs {
+    
+    // using  com.alibaba.nacos.common.utils.VersionUtils.getFullClientVersion instead.
+    @Deprecated
+    public static final String VERSION = VersionUtils.getFullClientVersion();
     
     public static String webContext = "/nacos";
     
@@ -46,6 +51,9 @@ public class UtilAndComs {
     public static final String NACOS_NAMING_LOG_NAME = "com.alibaba.nacos.naming.log.filename";
     
     public static final String NACOS_NAMING_LOG_LEVEL = "com.alibaba.nacos.naming.log.level";
+    
+    public static final int DEFAULT_CLIENT_BEAT_THREAD_COUNT =
+            ThreadUtils.getSuitableThreadCount(1) > 1 ? ThreadUtils.getSuitableThreadCount(1) / 2 : 1;
     
     public static final int DEFAULT_POLLING_THREAD_COUNT =
             ThreadUtils.getSuitableThreadCount(1) > 1 ? ThreadUtils.getSuitableThreadCount(1) / 2 : 1;

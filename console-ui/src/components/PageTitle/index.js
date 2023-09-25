@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { connect } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Copy from '../Copy';
@@ -25,20 +25,18 @@ import Copy from '../Copy';
 class PageTitle extends React.Component {
   static propTypes = {
     title: PropTypes.string,
-    namespaceId: PropTypes.string,
-    namespaceName: PropTypes.string,
     desc: PropTypes.string,
     nameSpace: PropTypes.bool,
     locale: PropTypes.object,
   };
 
-  getNameSpace(locale, namespaceId, namespaceName, desc, nameSpace) {
+  getNameSpace(locale, desc, nameSpace) {
     if (!nameSpace) {
-      return namespaceId;
+      return desc;
     }
     return (
       <span style={{ display: 'flex', alignItems: 'center', marginLeft: 16 }}>
-        {locale.NameSpace.namespace}
+        {locale.NameSpace.namespaceID}
         <Copy
           style={{
             marginLeft: 16,
@@ -47,24 +45,21 @@ class PageTitle extends React.Component {
             alignItems: 'center',
             background: 'rgb(239, 243, 248)',
             padding: '0px 8px',
+            minWidth: 220,
           }}
-          textNode={desc || namespaceName}
-          title={locale.ConfigurationManagement.copyNamespaceID}
-          value={namespaceId}
+          value={desc}
         />
       </span>
     );
   }
 
   render() {
-    const { title, namespaceId, namespaceName, desc, nameSpace, locale } = this.props;
+    const { title, desc, nameSpace, locale } = this.props;
     return (
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 8, marginBottom: 8 }}>
         <span style={{ fontSize: 28, height: 40, fontWeight: 500 }}>{title}</span>
         <span style={{ marginLeft: 4 }}>
-          {namespaceId && namespaceId !== 'undefined'
-            ? this.getNameSpace(locale, namespaceId, namespaceName, desc, nameSpace)
-            : ''}
+          {desc && desc !== 'undefined' ? this.getNameSpace(locale, desc, nameSpace) : ''}
         </span>
       </div>
     );

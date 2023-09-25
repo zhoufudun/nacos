@@ -34,25 +34,12 @@ public class ServerRemoteAbility implements Serializable {
      */
     private boolean supportRemoteConnection;
     
-    /**
-     * if support grpc report.
-     */
-    private boolean grpcReportEnabled = true;
-    
     public boolean isSupportRemoteConnection() {
         return this.supportRemoteConnection;
     }
     
     public void setSupportRemoteConnection(boolean supportRemoteConnection) {
         this.supportRemoteConnection = supportRemoteConnection;
-    }
-    
-    public boolean isGrpcReportEnabled() {
-        return grpcReportEnabled;
-    }
-    
-    public void setGrpcReportEnabled(boolean grpcReportEnabled) {
-        this.grpcReportEnabled = grpcReportEnabled;
     }
     
     @Override
@@ -64,11 +51,11 @@ public class ServerRemoteAbility implements Serializable {
             return false;
         }
         ServerRemoteAbility that = (ServerRemoteAbility) o;
-        return supportRemoteConnection == that.supportRemoteConnection && grpcReportEnabled == that.grpcReportEnabled;
+        return supportRemoteConnection == that.supportRemoteConnection;
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(supportRemoteConnection, grpcReportEnabled);
+        return Objects.hash(supportRemoteConnection);
     }
 }

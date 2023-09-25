@@ -17,7 +17,6 @@
 package com.alibaba.nacos.common.remote.client.grpc;
 
 import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.common.remote.client.RpcClientTlsConfig;
 
 import java.util.Map;
 import java.util.Properties;
@@ -66,15 +65,10 @@ public class GrpcClusterClient extends GrpcClient {
      * @param labels             .
      */
     public GrpcClusterClient(String name, Integer threadPoolCoreSize, Integer threadPoolMaxSize,
-                             Map<String, String> labels) {
-        this(name, threadPoolCoreSize, threadPoolMaxSize, labels, null);
+            Map<String, String> labels) {
+        super(name, threadPoolCoreSize, threadPoolMaxSize, labels);
     }
-
-    public GrpcClusterClient(String name, Integer threadPoolCoreSize, Integer threadPoolMaxSize,
-                             Map<String, String> labels, RpcClientTlsConfig tlsConfig) {
-        super(name, threadPoolCoreSize, threadPoolMaxSize, labels, tlsConfig);
-    }
-
+    
     @Override
     public int rpcPortOffset() {
         return Integer.parseInt(System.getProperty(GrpcConstants.NACOS_SERVER_GRPC_PORT_OFFSET_KEY,

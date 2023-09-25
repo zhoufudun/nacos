@@ -41,9 +41,6 @@ import java.util.StringJoiner;
  */
 public abstract class AbstractObjectUtils {
 
-    private AbstractObjectUtils() {
-    }
-
     private static final int INITIAL_HASH = 7;
 
     private static final int MULTIPLIER = 31;

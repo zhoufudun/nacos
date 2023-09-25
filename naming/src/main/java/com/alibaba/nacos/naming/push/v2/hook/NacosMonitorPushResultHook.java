@@ -32,9 +32,6 @@ public class NacosMonitorPushResultHook implements PushResultHook {
         MetricsMonitor.incrementPush();
         MetricsMonitor.incrementPushCost(result.getAllCost());
         MetricsMonitor.compareAndSetMaxPushCost(result.getAllCost());
-        if (null == result.getData().getHosts() || !result.getData().validate()) {
-            MetricsMonitor.incrementEmptyPush();
-        }
         if (isRpc(result.getSubscriber())) {
             NamingTpsMonitor.rpcPushSuccess(result.getSubscribeClientId(), result.getSubscriber().getIp());
         } else {

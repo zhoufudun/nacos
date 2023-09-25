@@ -39,9 +39,6 @@ import java.lang.reflect.Type;
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
 public final class JacksonUtils {
-
-    private JacksonUtils() {
-    }
     
     static ObjectMapper mapper = new ObjectMapper();
     

@@ -20,7 +20,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
-import com.alibaba.nacos.api.config.filter.IConfigFilter;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.filter.impl.ConfigFilterChainManager;
@@ -33,15 +32,13 @@ import com.alibaba.nacos.client.config.impl.LocalEncryptedDataKeyProcessor;
 import com.alibaba.nacos.client.config.impl.ServerListManager;
 import com.alibaba.nacos.client.config.utils.ContentUtils;
 import com.alibaba.nacos.client.config.utils.ParamUtils;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.client.utils.LogUtils;
 import com.alibaba.nacos.client.utils.ParamUtil;
-import com.alibaba.nacos.client.utils.PreInitUtils;
 import com.alibaba.nacos.client.utils.ValidatorUtils;
 import com.alibaba.nacos.common.utils.StringUtils;
 import org.slf4j.Logger;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -74,24 +71,22 @@ public class NacosConfigService implements ConfigService {
     private final ConfigFilterChainManager configFilterChainManager;
     
     public NacosConfigService(Properties properties) throws NacosException {
-        PreInitUtils.asyncPreLoadCostComponent();
-        final NacosClientProperties clientProperties = NacosClientProperties.PROTOTYPE.derive(properties);
-        ValidatorUtils.checkInitParam(clientProperties);
+        ValidatorUtils.checkInitParam(properties);
         
-        initNamespace(clientProperties);
-        this.configFilterChainManager = new ConfigFilterChainManager(clientProperties.asProperties());
-        ServerListManager serverListManager = new ServerListManager(clientProperties);
+        initNamespace(properties);
+        this.configFilterChainManager = new ConfigFilterChainManager(properties);
+        ServerListManager serverListManager = new ServerListManager(properties);
         serverListManager.start();
         
-        this.worker = new ClientWorker(this.configFilterChainManager, serverListManager, clientProperties);
+        this.worker = new ClientWorker(this.configFilterChainManager, serverListManager, properties);
         // will be deleted in 2.0 later versions
         agent = new ServerHttpAgent(serverListManager);
         
     }
     
-    private void initNamespace(NacosClientProperties properties) {
+    private void initNamespace(Properties properties) {
         namespace = ParamUtil.parseNamespace(properties);
-        properties.setProperty(PropertyKeyConst.NAMESPACE, namespace);
+        properties.put(PropertyKeyConst.NAMESPACE, namespace);
     }
     
     @Override
@@ -107,8 +102,7 @@ public class NacosConfigService implements ConfigService {
                 .queryConfig(dataId, group, worker.getAgent().getTenant(), timeoutMs, false);
         String content = configResponse.getContent();
         String encryptedDataKey = configResponse.getEncryptedDataKey();
-        worker.addTenantListenersWithContent(dataId, group, content, encryptedDataKey,
-                Collections.singletonList(listener));
+        worker.addTenantListenersWithContent(dataId, group, content, encryptedDataKey, Arrays.asList(listener));
         
         // get a decryptContent, fix https://github.com/alibaba/nacos/issues/7039
         ConfigResponse cr = new ConfigResponse();
@@ -122,7 +116,7 @@ public class NacosConfigService implements ConfigService {
     
     @Override
     public void addListener(String dataId, String group, Listener listener) throws NacosException {
-        worker.addTenantListeners(dataId, group, Collections.singletonList(listener));
+        worker.addTenantListeners(dataId, group, Arrays.asList(listener));
     }
     
     @Override
@@ -251,12 +245,7 @@ public class NacosConfigService implements ConfigService {
             return DOWN;
         }
     }
-
-    @Override
-    public void addConfigFilter(IConfigFilter configFilter) {
-        configFilterChainManager.addFilter(configFilter);
-    }
-
+    
     @Override
     public void shutDown() throws NacosException {
         worker.shutdown();

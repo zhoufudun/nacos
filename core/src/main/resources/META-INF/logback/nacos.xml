@@ -138,15 +138,15 @@
     </appender>
     
     <!--TPS control -->
-    <appender name="plugin-control-connection"
+    <appender name="tps-control"
         class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/plugin-control-connection.log</file>
+        <file>${LOG_HOME}/tps-control.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/plugin-control-connection.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/tps-control.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
             <maxFileSize>2GB</maxFileSize>
             <maxHistory>7</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
+            <totalSizeCap>7GB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
         <encoder>
@@ -154,15 +154,15 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    <appender name="plugin-control-tps"
+    <appender name="tps-control-detail"
         class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/plugin-control-tps.log</file>
+        <file>${LOG_HOME}/tps-control-detail.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/plugin-control-tps.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/tps-control-detail.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
             <maxFileSize>2GB</maxFileSize>
             <maxHistory>7</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
+            <totalSizeCap>7GB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
         <encoder>
@@ -171,14 +171,14 @@
         </encoder>
     </appender>
     
-    <appender name="plugin-control"
+    <appender name="tps-control-digest"
         class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/plugin-control.log</file>
+        <file>${LOG_HOME}/tps-control-digest.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/plugin-control.%d{yyyy-MM-dd}.%i</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/tps-control-digest.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
             <maxFileSize>2GB</maxFileSize>
-            <maxHistory>14</maxHistory>
+            <maxHistory>7</maxHistory>
             <totalSizeCap>7GB</totalSizeCap>
             <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
@@ -261,18 +261,18 @@
     </logger>
     
     <!-- TPS Control-->
-    <logger name="com.alibaba.nacos.plugin.control" additivity="false">
+    <logger name="com.alibaba.nacos.core.remote.control.digest" additivity="false">
         <level value="DEBUG"/>
-        <appender-ref ref="plugin-control"/>
+        <appender-ref ref="tps-control-digest"/>
     </logger>
-    <logger name="com.alibaba.nacos.plugin.control.tps" additivity="false">
+    <logger name="com.alibaba.nacos.core.remote.control.detail" additivity="false">
         <level value="DEBUG"/>
-        <appender-ref ref="plugin-control-tps"/>
+        <appender-ref ref="tps-control-detail"/>
     </logger>
     
-    <logger name="com.alibaba.nacos.plugin.control.connection" additivity="false">
+    <logger name="com.alibaba.nacos.core.remote.control" additivity="false">
         <level value="DEBUG"/>
-        <appender-ref ref="plugin-control-connection"/>
+        <appender-ref ref="tps-control"/>
     </logger>
     
     

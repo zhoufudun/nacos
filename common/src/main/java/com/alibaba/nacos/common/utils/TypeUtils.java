@@ -25,9 +25,6 @@ import java.lang.reflect.Type;
  * @author zzq
  */
 public class TypeUtils {
-
-    private TypeUtils() {
-    }
     
     /**
      * Create a parameterized type instance.
@@ -46,6 +43,7 @@ public class TypeUtils {
      *
      * @param raw           raw class
      * @param typeArguments the types used for parameterization
+     * @return {@link ParameterizedType}
      */
     private static void checkParameterizeMethodParameter(Class<?> raw, final Type... typeArguments) {
         if (raw == null) {

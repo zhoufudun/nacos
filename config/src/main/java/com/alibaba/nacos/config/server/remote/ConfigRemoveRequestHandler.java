@@ -24,13 +24,12 @@ import com.alibaba.nacos.auth.annotation.Secured;
 import com.alibaba.nacos.common.utils.StringUtils;
 import com.alibaba.nacos.config.server.model.event.ConfigDataChangeEvent;
 import com.alibaba.nacos.config.server.service.ConfigChangePublisher;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
 import com.alibaba.nacos.config.server.utils.ParamUtils;
 import com.alibaba.nacos.config.server.utils.TimeUtils;
 import com.alibaba.nacos.core.remote.RequestHandler;
-import com.alibaba.nacos.core.control.TpsControl;
+import com.alibaba.nacos.core.remote.control.TpsControl;
 import com.alibaba.nacos.core.utils.Loggers;
 import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
 import com.alibaba.nacos.plugin.auth.constant.SignType;
@@ -47,14 +46,10 @@ import java.sql.Timestamp;
 @Component
 public class ConfigRemoveRequestHandler extends RequestHandler<ConfigRemoveRequest, ConfigRemoveResponse> {
     
-    private final ConfigInfoPersistService configInfoPersistService;
+    private final PersistService persistService;
     
-    private final ConfigInfoTagPersistService configInfoTagPersistService;
-    
-    public ConfigRemoveRequestHandler(ConfigInfoPersistService configInfoPersistService,
-            ConfigInfoTagPersistService configInfoTagPersistService) {
-        this.configInfoPersistService = configInfoPersistService;
-        this.configInfoTagPersistService = configInfoTagPersistService;
+    public ConfigRemoveRequestHandler(PersistService persistService) {
+        this.persistService = persistService;
     }
     
     @Override
@@ -72,21 +67,18 @@ public class ConfigRemoveRequestHandler extends RequestHandler<ConfigRemoveReque
             ParamUtils.checkTenant(tenant);
             ParamUtils.checkParam(dataId, group, "datumId", "rm");
             ParamUtils.checkParam(tag);
-            String persistEvent = ConfigTraceService.PERSISTENCE_EVENT;
             
             String clientIp = meta.getClientIp();
             if (StringUtils.isBlank(tag)) {
-                configInfoPersistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
+                persistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
             } else {
-                persistEvent = ConfigTraceService.PERSISTENCE_EVENT_TAG + "-" + tag;
-                
-                configInfoTagPersistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
+                persistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
             }
             final Timestamp time = TimeUtils.getCurrentTime();
-            ConfigTraceService.logPersistenceEvent(dataId, group, tenant, null, time.getTime(), clientIp, persistEvent,
-                    ConfigTraceService.PERSISTENCE_TYPE_REMOVE, null);
-            ConfigChangePublisher.notifyConfigChange(
-                    new ConfigDataChangeEvent(false, dataId, group, tenant, tag, time.getTime()));
+            ConfigTraceService.logPersistenceEvent(dataId, group, tenant, null, time.getTime(), clientIp,
+                    ConfigTraceService.PERSISTENCE_EVENT_REMOVE, null);
+            ConfigChangePublisher
+                    .notifyConfigChange(new ConfigDataChangeEvent(false, dataId, group, tenant, tag, time.getTime()));
             return ConfigRemoveResponse.buildSuccessResponse();
             
         } catch (Exception e) {

@@ -23,9 +23,9 @@ import com.alibaba.nacos.naming.consistency.RecordListener;
 import com.alibaba.nacos.naming.consistency.persistent.impl.BasePersistentServiceProcessor;
 import com.alibaba.nacos.naming.consistency.persistent.impl.PersistentServiceProcessor;
 import com.alibaba.nacos.naming.consistency.persistent.impl.StandalonePersistentServiceProcessor;
+import com.alibaba.nacos.naming.consistency.persistent.raft.RaftConsistencyServiceImpl;
 import com.alibaba.nacos.naming.pojo.Record;
 import com.alibaba.nacos.sys.env.EnvUtil;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -35,56 +35,80 @@ import java.util.Optional;
  *
  * @author xiweng.yy
  */
-@DependsOn("ProtocolManager")
 @Component("persistentConsistencyServiceDelegate")
 public class PersistentConsistencyServiceDelegateImpl implements PersistentConsistencyService {
     
-    private final BasePersistentServiceProcessor persistentServiceProcessor;
+    private final ClusterVersionJudgement versionJudgement;
     
-    public PersistentConsistencyServiceDelegateImpl(ProtocolManager protocolManager) throws Exception {
-        this.persistentServiceProcessor = createPersistentServiceProcessor(protocolManager);
+    private final RaftConsistencyServiceImpl oldPersistentConsistencyService;
+    
+    private final BasePersistentServiceProcessor newPersistentConsistencyService;
+    
+    private volatile boolean switchNewPersistentService = false;
+    
+    public PersistentConsistencyServiceDelegateImpl(ClusterVersionJudgement versionJudgement,
+            RaftConsistencyServiceImpl oldPersistentConsistencyService, ProtocolManager protocolManager)
+            throws Exception {
+        this.versionJudgement = versionJudgement;
+        this.oldPersistentConsistencyService = oldPersistentConsistencyService;
+        this.newPersistentConsistencyService = createNewPersistentServiceProcessor(protocolManager, versionJudgement);
+        init();
+    }
+    
+    private void init() {
+        if (EnvUtil.isSupportUpgradeFrom1X()) {
+            this.versionJudgement.registerObserver(isAllNewVersion -> switchNewPersistentService = isAllNewVersion, -1);
+            return;
+        }
+        this.switchNewPersistentService = true;
     }
     
     @Override
     public void put(String key, Record value) throws NacosException {
-        persistentServiceProcessor.put(key, value);
+        switchOne().put(key, value);
     }
     
     @Override
     public void remove(String key) throws NacosException {
-        persistentServiceProcessor.remove(key);
+        switchOne().remove(key);
     }
     
     @Override
     public Datum get(String key) throws NacosException {
-        return persistentServiceProcessor.get(key);
+        return switchOne().get(key);
     }
     
     @Override
     public void listen(String key, RecordListener listener) throws NacosException {
-        persistentServiceProcessor.listen(key, listener);
+        oldPersistentConsistencyService.listen(key, listener);
+        newPersistentConsistencyService.listen(key, listener);
     }
     
     @Override
     public void unListen(String key, RecordListener listener) throws NacosException {
-        persistentServiceProcessor.unListen(key, listener);
+        newPersistentConsistencyService.unListen(key, listener);
+        oldPersistentConsistencyService.unListen(key, listener);
     }
     
     @Override
     public boolean isAvailable() {
-        return persistentServiceProcessor.isAvailable();
+        return switchOne().isAvailable();
     }
     
     @Override
     public Optional<String> getErrorMsg() {
-        return persistentServiceProcessor.getErrorMsg();
+        return switchOne().getErrorMsg();
     }
     
-    private BasePersistentServiceProcessor createPersistentServiceProcessor(ProtocolManager protocolManager)
-            throws Exception {
+    private PersistentConsistencyService switchOne() {
+        return switchNewPersistentService ? newPersistentConsistencyService : oldPersistentConsistencyService;
+    }
+    
+    private BasePersistentServiceProcessor createNewPersistentServiceProcessor(ProtocolManager protocolManager,
+            ClusterVersionJudgement versionJudgement) throws Exception {
         final BasePersistentServiceProcessor processor =
-                EnvUtil.getStandaloneMode() ? new StandalonePersistentServiceProcessor()
-                        : new PersistentServiceProcessor(protocolManager);
+                EnvUtil.getStandaloneMode() ? new StandalonePersistentServiceProcessor(versionJudgement)
+                        : new PersistentServiceProcessor(protocolManager, versionJudgement);
         processor.afterConstruct();
         return processor;
     }

@@ -17,6 +17,7 @@
 package com.alibaba.nacos.naming.web;
 
 import com.alibaba.nacos.core.utils.ReuseHttpServletRequest;
+import com.alibaba.nacos.naming.core.v2.upgrade.UpgradeJudgement;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,9 +28,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class DistroTagGeneratorImpl implements DistroTagGenerator {
     
+    private final DistroTagGenerator serviceNameTag = new DistroServiceNameTagGenerator();
+    
     private final DistroTagGenerator ipPortTag = new DistroIpPortTagGenerator();
     
-    public DistroTagGeneratorImpl() {
+    private final UpgradeJudgement upgradeJudgement;
+    
+    public DistroTagGeneratorImpl(UpgradeJudgement upgradeJudgement) {
+        this.upgradeJudgement = upgradeJudgement;
     }
     
     @Override
@@ -41,12 +47,13 @@ public class DistroTagGeneratorImpl implements DistroTagGenerator {
      * Get tag generator according to cluster member ability.
      *
      * <p>
-     * If all member is upper than 2.x. Using {@link DistroIpPortTagGenerator}.
+     * If all member is upper than 2.x. Using {@link DistroIpPortTagGenerator}. Otherwise use 1.x {@link
+     * DistroServiceNameTagGenerator}.
      * </p>
      *
      * @return actual tag generator
      */
     private DistroTagGenerator getTagGenerator() {
-        return ipPortTag;
+        return upgradeJudgement.isUseGrpcFeatures() ? ipPortTag : serviceNameTag;
     }
 }

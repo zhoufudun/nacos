@@ -18,6 +18,7 @@ package com.alibaba.nacos.core.monitor;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.ImmutableTag;
+import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 
@@ -32,8 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class MetricsMonitor {
     
-    private static final String METER_REGISTRY = NacosMeterRegistryCenter.CORE_STABLE_REGISTRY;
-    
     private static final DistributionSummary RAFT_READ_INDEX_FAILED;
     
     private static final DistributionSummary RAFT_FROM_LEADER;
@@ -45,31 +44,16 @@ public final class MetricsMonitor {
     private static AtomicInteger longConnection = new AtomicInteger();
     
     static {
-        ImmutableTag immutableTag = new ImmutableTag("module", "core");
-        List<Tag> tags = new ArrayList<>();
-        tags.add(immutableTag);
-        tags.add(new ImmutableTag("name", "raft_read_index_failed"));
-        RAFT_READ_INDEX_FAILED = NacosMeterRegistryCenter.summary(METER_REGISTRY, "nacos_monitor", tags);
-    
-        tags = new ArrayList<>();
-        tags.add(immutableTag);
-        tags.add(new ImmutableTag("name", "raft_read_from_leader"));
-        RAFT_FROM_LEADER = NacosMeterRegistryCenter.summary(METER_REGISTRY, "nacos_monitor", tags);
-    
-        tags = new ArrayList<>();
-        tags.add(immutableTag);
-        tags.add(new ImmutableTag("name", "raft_apply_log_timer"));
-        RAFT_APPLY_LOG_TIMER = NacosMeterRegistryCenter.timer(METER_REGISTRY, "nacos_monitor", tags);
-    
-        tags = new ArrayList<>();
-        tags.add(immutableTag);
-        tags.add(new ImmutableTag("name", "raft_apply_read_timer"));
-        RAFT_APPLY_READ_TIMER = NacosMeterRegistryCenter.timer(METER_REGISTRY, "nacos_monitor", tags);
+        RAFT_READ_INDEX_FAILED = NacosMeterRegistry.summary("protocol", "raft_read_index_failed");
+        RAFT_FROM_LEADER = NacosMeterRegistry.summary("protocol", "raft_read_from_leader");
         
-        tags = new ArrayList<>();
-        tags.add(immutableTag);
+        RAFT_APPLY_LOG_TIMER = NacosMeterRegistry.timer("protocol", "raft_apply_log_timer");
+        RAFT_APPLY_READ_TIMER = NacosMeterRegistry.timer("protocol", "raft_apply_read_timer");
+        
+        List<Tag> tags = new ArrayList<>();
+        tags.add(new ImmutableTag("module", "config"));
         tags.add(new ImmutableTag("name", "longConnection"));
-        NacosMeterRegistryCenter.gauge(METER_REGISTRY, "nacos_monitor", tags, longConnection);
+        Metrics.gauge("nacos_monitor", tags, longConnection);
         
     }
     

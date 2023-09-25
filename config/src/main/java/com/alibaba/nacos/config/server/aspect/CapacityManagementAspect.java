@@ -21,13 +21,14 @@ import com.alibaba.nacos.config.server.constant.CounterMode;
 import com.alibaba.nacos.config.server.model.ConfigInfo;
 import com.alibaba.nacos.config.server.model.capacity.Capacity;
 import com.alibaba.nacos.config.server.service.capacity.CapacityService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.config.server.utils.PropertyUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,15 +54,12 @@ public class CapacityManagementAspect {
     private static final String DELETE_CONFIG =
             "execution(* com.alibaba.nacos.config.server.controller.ConfigController.deleteConfig(..)) && args"
                     + "(request,response,dataId,group,tenant,..)";
-
-    private final CapacityService capacityService;
-
-    private final ConfigInfoPersistService configInfoPersistService;
-
-    public CapacityManagementAspect(ConfigInfoPersistService configInfoPersistService, CapacityService capacityService) {
-        this.configInfoPersistService = configInfoPersistService;
-        this.capacityService = capacityService;
-    }
+    
+    @Autowired
+    private CapacityService capacityService;
+    
+    @Autowired
+    private PersistService persistService;
     
     /**
      * Need to judge the size of content whether to exceed the limitation.
@@ -78,7 +76,7 @@ public class CapacityManagementAspect {
         if (StringUtils.isBlank(betaIps)) {
             if (StringUtils.isBlank(tag)) {
                 // do capacity management limitation check for writing or updating config_info table.
-                if (configInfoPersistService.findConfigInfo(dataId, group, tenant) == null) {
+                if (persistService.findConfigInfo(dataId, group, tenant) == null) {
                     // Write operation.
                     return do4Insert(pjp, request, response, group, tenant, content);
                 }
@@ -155,7 +153,7 @@ public class CapacityManagementAspect {
             return pjp.proceed();
         }
         LOGGER.info("[capacityManagement] aroundDeleteConfig");
-        ConfigInfo configInfo = configInfoPersistService.findConfigInfo(dataId, group, tenant);
+        ConfigInfo configInfo = persistService.findConfigInfo(dataId, group, tenant);
         if (configInfo == null) {
             return pjp.proceed();
         }

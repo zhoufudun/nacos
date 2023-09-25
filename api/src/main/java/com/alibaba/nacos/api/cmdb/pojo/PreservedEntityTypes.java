@@ -17,7 +17,7 @@
 package com.alibaba.nacos.api.cmdb.pojo;
 
 /**
- * CMDB preserved entity type.
+ * CMDB preserverd entity type.
  *
  * @author nkorange
  * @since 0.7.0

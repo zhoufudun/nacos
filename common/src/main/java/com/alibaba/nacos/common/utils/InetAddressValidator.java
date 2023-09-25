@@ -22,9 +22,6 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "PMD.ClassNamingShouldBeCamelRule"})
 public class InetAddressValidator {
-
-    private InetAddressValidator() {
-    }
     
     private static final String PERCENT = "%";
     

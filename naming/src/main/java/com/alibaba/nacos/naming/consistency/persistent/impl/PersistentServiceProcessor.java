@@ -30,9 +30,10 @@ import com.alibaba.nacos.core.distributed.ProtocolManager;
 import com.alibaba.nacos.core.exception.ErrorCode;
 import com.alibaba.nacos.naming.consistency.Datum;
 import com.alibaba.nacos.naming.consistency.RecordListener;
-import com.alibaba.nacos.naming.constants.Constants;
+import com.alibaba.nacos.naming.consistency.persistent.ClusterVersionJudgement;
 import com.alibaba.nacos.naming.misc.Loggers;
 import com.alibaba.nacos.naming.pojo.Record;
+import com.alibaba.nacos.naming.constants.Constants;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import com.google.protobuf.ByteString;
 
@@ -57,7 +58,9 @@ public class PersistentServiceProcessor extends BasePersistentServiceProcessor {
      */
     private volatile boolean hasLeader = false;
     
-    public PersistentServiceProcessor(ProtocolManager protocolManager) throws Exception {
+    public PersistentServiceProcessor(ProtocolManager protocolManager, ClusterVersionJudgement versionJudgement)
+            throws Exception {
+        super(versionJudgement);
         this.protocol = protocolManager.getCpProtocol();
     }
     

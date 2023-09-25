@@ -22,7 +22,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
-import com.alibaba.nacos.client.env.NacosClientProperties;
 import com.alibaba.nacos.client.naming.backups.FailoverReactor;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,9 +37,7 @@ public class ServiceInfoHolderTest {
     @Test
     public void testGetServiceInfoMap() throws NoSuchFieldException, IllegalAccessException {
         Properties prop = new Properties();
-    
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         Assert.assertEquals(0, holder.getServiceInfoMap().size());
         Field fieldNotifierEventScope = ServiceInfoHolder.class.getDeclaredField("notifierEventScope");
         fieldNotifierEventScope.setAccessible(true);
@@ -58,8 +55,7 @@ public class ServiceInfoHolderTest {
         info.setHosts(hosts);
         
         Properties prop = new Properties();
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         
         ServiceInfo actual1 = holder.processServiceInfo(info);
         Assert.assertEquals(info, actual1);
@@ -87,8 +83,7 @@ public class ServiceInfoHolderTest {
     @Test
     public void testProcessServiceInfo2() {
         Properties prop = new Properties();
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         String json = "{\"groupName\":\"a\",\"name\":\"b\",\"clusters\":\"c\"}";
         
         ServiceInfo actual = holder.processServiceInfo(json);
@@ -109,8 +104,7 @@ public class ServiceInfoHolderTest {
         
         Properties prop = new Properties();
         prop.setProperty(PropertyKeyConst.NAMING_PUSH_EMPTY_PROTECTION, "true");
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         holder.processServiceInfo(oldInfo);
         
         ServiceInfo newInfo = new ServiceInfo("a@@b@@c");
@@ -130,8 +124,7 @@ public class ServiceInfoHolderTest {
         info.setHosts(hosts);
         
         Properties prop = new Properties();
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         
         ServiceInfo expect = holder.processServiceInfo(info);
         String serviceName = "b";
@@ -146,8 +139,7 @@ public class ServiceInfoHolderTest {
     @Test
     public void testShutdown() throws NacosException, NoSuchFieldException, IllegalAccessException {
         Properties prop = new Properties();
-        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(prop);
-        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", nacosClientProperties);
+        ServiceInfoHolder holder = new ServiceInfoHolder("aa", "scope-001", prop);
         Field field = ServiceInfoHolder.class.getDeclaredField("failoverReactor");
         field.setAccessible(true);
         FailoverReactor reactor = (FailoverReactor) field.get(holder);

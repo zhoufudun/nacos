@@ -18,6 +18,7 @@ package com.alibaba.nacos.naming.core.v2.index;
 
 import com.alibaba.nacos.common.notify.Event;
 import com.alibaba.nacos.naming.core.v2.client.Client;
+import com.alibaba.nacos.naming.core.v2.event.client.ClientEvent;
 import com.alibaba.nacos.naming.core.v2.event.client.ClientOperationEvent;
 import com.alibaba.nacos.naming.core.v2.pojo.Service;
 import org.junit.Assert;
@@ -45,7 +46,7 @@ public class ClientServiceIndexesManagerTest {
     private Service service;
     
     @Mock
-    private ClientOperationEvent.ClientReleaseEvent clientReleaseEvent;
+    private ClientEvent.ClientDisconnectEvent clientDisconnectEvent;
     
     @Mock
     private ClientOperationEvent clientOperationEvent;
@@ -125,10 +126,10 @@ public class ClientServiceIndexesManagerTest {
     
     @Test
     public void testOnEvent() {
-        Mockito.when(clientReleaseEvent.getClient()).thenReturn(client);
-        clientServiceIndexesManager.onEvent(clientReleaseEvent);
+        Mockito.when(clientDisconnectEvent.getClient()).thenReturn(client);
+        clientServiceIndexesManager.onEvent(clientDisconnectEvent);
         
-        Mockito.verify(clientReleaseEvent).getClient();
+        Mockito.verify(clientDisconnectEvent).getClient();
         
         clientServiceIndexesManager.onEvent(clientOperationEvent);
         

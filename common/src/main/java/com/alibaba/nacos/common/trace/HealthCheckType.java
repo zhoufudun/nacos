@@ -41,7 +41,7 @@ public enum HealthCheckType {
     
     private String prefix;
     
-    HealthCheckType(String prefix) {
+    private HealthCheckType(String prefix) {
         this.prefix = prefix;
     }
     

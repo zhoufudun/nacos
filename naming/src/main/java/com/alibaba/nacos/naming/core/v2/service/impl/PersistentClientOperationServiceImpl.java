@@ -21,7 +21,6 @@ import com.alibaba.nacos.api.exception.runtime.NacosRuntimeException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.common.notify.NotifyCenter;
 import com.alibaba.nacos.common.utils.ClassUtils;
-import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.alibaba.nacos.consistency.DataOperation;
 import com.alibaba.nacos.consistency.SerializeFactory;
 import com.alibaba.nacos.consistency.Serializer;
@@ -60,13 +59,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -118,7 +114,7 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
         
         try {
             protocol.write(writeRequest);
-            Loggers.RAFT.info("Client registered. service={}, clientId={}, instance={}", service, clientId, instance);
+            Loggers.RAFT.info("Client registered. service={}, clientId={}, instance={}", service, instance, clientId);
         } catch (Exception e) {
             throw new NacosRuntimeException(NacosException.SERVER_ERROR, e);
         }
@@ -138,7 +134,8 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
         request.setService(service);
         request.setInstance(instance);
         request.setClientId(clientId);
-        final WriteRequest writeRequest = WriteRequest.newBuilder().setGroup(group())
+        final WriteRequest writeRequest = WriteRequest.newBuilder()
+                .setGroup(group())
                 .setData(ByteString.copyFrom(serializer.serialize(request))).setOperation(DataOperation.CHANGE.name())
                 .build();
         try {
@@ -165,7 +162,7 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
         
         try {
             protocol.write(writeRequest);
-            Loggers.RAFT.info("Client unregistered. service={}, clientId={}, instance={}", service, clientId, instance);
+            Loggers.RAFT.info("Client unregistered. service={}, clientId={}, instance={}", service, instance, clientId);
         } catch (Exception e) {
             throw new NacosRuntimeException(NacosException.SERVER_ERROR, e);
         }
@@ -188,11 +185,11 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
     
     @Override
     public Response onApply(WriteRequest request) {
+        final InstanceStoreRequest instanceRequest = serializer.deserialize(request.getData().toByteArray());
+        final DataOperation operation = DataOperation.valueOf(request.getOperation());
         final Lock lock = readLock;
         lock.lock();
         try {
-            final InstanceStoreRequest instanceRequest = serializer.deserialize(request.getData().toByteArray());
-            final DataOperation operation = DataOperation.valueOf(request.getOperation());
             switch (operation) {
                 case ADD:
                     onInstanceRegister(instanceRequest.service, instanceRequest.instance,
@@ -212,18 +209,14 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
                             .build();
             }
             return Response.newBuilder().setSuccess(true).build();
-        } catch (Exception e) {
-            Loggers.RAFT.warn("Persistent client operation failed. ", e);
-            return Response.newBuilder().setSuccess(false)
-                    .setErrMsg("Persistent client operation failed. " + e.getMessage()).build();
         } finally {
             lock.unlock();
         }
     }
     
     private boolean instanceAndServiceExist(InstanceStoreRequest instanceRequest) {
-        return clientManager.contains(instanceRequest.getClientId()) && clientManager
-                .getClient(instanceRequest.getClientId()).getAllPublishedService().contains(instanceRequest.service);
+        return clientManager.contains(instanceRequest.getClientId()) && clientManager.getClient(
+                instanceRequest.getClientId()).getAllPublishedService().contains(instanceRequest.service);
     }
     
     private void onInstanceRegister(Service service, Instance instance, String clientId) {
@@ -332,9 +325,10 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
             final Checksum checksum = new CRC64();
             byte[] snapshotBytes = DiskUtils.decompress(sourceFile, checksum);
             LocalFileMeta fileMeta = reader.getFileMeta(SNAPSHOT_ARCHIVE);
-            if (fileMeta.getFileMeta().containsKey(CHECK_SUM_KEY) && !Objects
-                    .equals(Long.toHexString(checksum.getValue()), fileMeta.get(CHECK_SUM_KEY))) {
-                throw new IllegalArgumentException("Snapshot checksum failed");
+            if (fileMeta.getFileMeta().containsKey(CHECK_SUM_KEY)) {
+                if (!Objects.equals(Long.toHexString(checksum.getValue()), fileMeta.get(CHECK_SUM_KEY))) {
+                    throw new IllegalArgumentException("Snapshot checksum failed");
+                }
             }
             loadSnapshot(snapshotBytes);
             Loggers.RAFT.info("snapshot success to load from : {}", readerPath);
@@ -344,118 +338,25 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
         protected InputStream dumpSnapshot() {
             Map<String, IpPortBasedClient> clientMap = clientManager.showClients();
             ConcurrentHashMap<String, ClientSyncData> clone = new ConcurrentHashMap<>(INITIAL_CAPACITY);
-            clientMap.forEach((clientId, client) -> clone.put(clientId, client.generateSyncData()));
+            clientMap.forEach((clientId, client) -> {
+                clone.put(clientId, client.generateSyncData());
+            });
             return new ByteArrayInputStream(serializer.serialize(clone));
         }
         
         protected void loadSnapshot(byte[] snapshotBytes) {
             ConcurrentHashMap<String, ClientSyncData> newData = serializer.deserialize(snapshotBytes);
-            Collection<String> oldClientIds = clientManager.allClientId();
-            // add or update
+            ConcurrentHashMap<String, IpPortBasedClient> snapshot = new ConcurrentHashMap<>(newData.size());
             for (Map.Entry<String, ClientSyncData> entry : newData.entrySet()) {
-                if (oldClientIds.contains(entry.getKey())) {
-                    // update alive client
-                    updateSyncDataToClient(entry, (IpPortBasedClient) clientManager.getClient(entry.getKey()));
-                } else {
-                    // add new client
-                    IpPortBasedClient snapshotClient = new IpPortBasedClient(entry.getKey(), false);
-                    snapshotClient.setAttributes(entry.getValue().getAttributes());
-                    snapshotClient.init();
-                    addSyncDataToClient(entry, snapshotClient);
-                }
+                IpPortBasedClient snapshotClient = new IpPortBasedClient(entry.getKey(), false);
+                snapshotClient.init();
+                loadSyncDataToClient(entry, snapshotClient);
+                snapshot.put(entry.getKey(), snapshotClient);
             }
-            // remove dead client
-            removeDeadClient(newData.keySet(), oldClientIds);
-        }
-
-        /**
-         * update instance info for client.
-         *
-         * @param entry entry
-         * @param client client
-         */
-        private void updateSyncDataToClient(Map.Entry<String, ClientSyncData> entry, IpPortBasedClient client) {
-            ClientSyncData data = entry.getValue();
-            List<String> namespaces = data.getNamespaces();
-            List<String> groupNames = data.getGroupNames();
-            List<String> serviceNames = data.getServiceNames();
-            List<InstancePublishInfo> instances = data.getInstancePublishInfos();
-            // alive instance data: Service = InstancePublishInfo
-            Map<Service, InstancePublishInfo> newInstanceInfoMap = new HashMap<>(instances.size());
-            for (int i = 0; i < namespaces.size(); i++) {
-                Service service = Service.newService(namespaces.get(i), groupNames.get(i), serviceNames.get(i), false);
-                newInstanceInfoMap.put(service, instances.get(i));
-            }
-            // old instance data
-            Collection<Service> oldPublishedService = client.getAllPublishedService();
-            Set<Service> aliveInstanceServices = newInstanceInfoMap.keySet();
-            // add or update existed service
-            for (Service service : aliveInstanceServices) {
-                Service singleton = ServiceManager.getInstance().getSingleton(service);
-                InstancePublishInfo newInstanceInfo = newInstanceInfoMap.get(singleton);
-                if (oldPublishedService.contains(singleton)) {
-                    // update if necessary
-                    InstancePublishInfo oldInstanceInfo = client.getInstancePublishInfo(singleton);
-                    if (oldInstanceInfo != null && !newInstanceInfo.equals(oldInstanceInfo)) {
-                        client.putServiceInstance(singleton, newInstanceInfo);
-                        NotifyCenter.publishEvent(new ClientOperationEvent.ClientRegisterServiceEvent(singleton, client.getClientId()));
-                        Loggers.RAFT.info("[SNAPSHOT-DATA-UPDATE] service={}, instance={}", service, newInstanceInfo);
-                    }
-                } else {
-                    // add
-                    client.putServiceInstance(singleton, newInstanceInfo);
-                    NotifyCenter.publishEvent(new ClientOperationEvent.ClientRegisterServiceEvent(singleton, client.getClientId()));
-                    Loggers.RAFT.info("[SNAPSHOT-DATA-ADD] service={}, instance={}", service, newInstanceInfo);
-                }
-            }
-            // remove dead instance
-            for (Service service : oldPublishedService) {
-                if (!aliveInstanceServices.contains(service)) {
-                    InstancePublishInfo oldInfo = client.getInstancePublishInfo(service);
-                    // metric ip count decrement
-                    client.removeServiceInstance(service);
-                    NotifyCenter.publishEvent(new ClientOperationEvent.ClientDeregisterServiceEvent(service, client.getClientId()));
-                    Loggers.RAFT.info("[SNAPSHOT-DATA-REMOVE] service={}, instance={}", service, oldInfo);
-                }
-            }
-        }
-
-        /**
-         * remove certain client which has dead.
-         *
-         * @param aliveClientIds new client ids
-         * @param oldClientIds old client ids
-         */
-        private void removeDeadClient(Collection<String> aliveClientIds, Collection<String> oldClientIds) {
-            // return if empty
-            if (CollectionUtils.isEmpty(oldClientIds)) {
-                return;
-            }
-            for (String oldClientId : oldClientIds) {
-                // no contains if discaonnect
-                if (!aliveClientIds.contains(oldClientId)) {
-                    Client client = clientManager.getClient(oldClientId);
-                    // remove all publishedService
-                    if (client != null) {
-                        if (CollectionUtils.isNotEmpty(client.getAllPublishedService())) {
-                            for (Service service : client.getAllPublishedService()) {
-                                Service singleton = ServiceManager.getInstance().getSingleton(service);
-                                InstancePublishInfo oldInfo = client.getInstancePublishInfo(service);
-                                // metric ip count decrement
-                                client.removeServiceInstance(service);
-                                NotifyCenter.publishEvent(new ClientOperationEvent.ClientDeregisterServiceEvent(singleton, client.getClientId()));
-                                Loggers.RAFT.info("[SNAPSHOT-DATA-REMOVE] service={}, instance={}", singleton, oldInfo);
-                            }
-                        }
-                        // remove client
-                        clientManager.removeAndRelease(client.getClientId());
-                        Loggers.RAFT.info("[SNAPSHOT-DATA-REMOVE] client={}", client);
-                    }
-                }
-            }
+            clientManager.loadFromSnapshot(snapshot);
         }
         
-        private void addSyncDataToClient(Map.Entry<String, ClientSyncData> entry, IpPortBasedClient client) {
+        private void loadSyncDataToClient(Map.Entry<String, ClientSyncData> entry, IpPortBasedClient client) {
             ClientSyncData data = entry.getValue();
             List<String> namespaces = data.getNamespaces();
             List<String> groupNames = data.getGroupNames();
@@ -465,11 +366,10 @@ public class PersistentClientOperationServiceImpl extends RequestProcessor4CP im
                 Service service = Service.newService(namespaces.get(i), groupNames.get(i), serviceNames.get(i), false);
                 Service singleton = ServiceManager.getInstance().getSingleton(service);
                 client.putServiceInstance(singleton, instances.get(i));
-                Loggers.RAFT.info("[SNAPSHOT-DATA-ADD] service={}, instance={}", service, instances.get(i));
+                Loggers.RAFT.info("[SNAPSHOT-LOAD] service={}, instance={}", service, instances.get(i));
                 NotifyCenter.publishEvent(
                         new ClientOperationEvent.ClientRegisterServiceEvent(singleton, client.getClientId()));
             }
-            clientManager.addSyncClient(client);
         }
         
         @Override

@@ -48,8 +48,6 @@ public final class TaskExecuteWorker implements NacosTaskProcessor, Closeable {
     
     private final AtomicBoolean closed;
     
-    private final InnerWorker realWorker;
-    
     public TaskExecuteWorker(final String name, final int mod, final int total) {
         this(name, mod, total, null);
     }
@@ -59,8 +57,7 @@ public final class TaskExecuteWorker implements NacosTaskProcessor, Closeable {
         this.queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.closed = new AtomicBoolean(false);
         this.log = null == logger ? LoggerFactory.getLogger(TaskExecuteWorker.class) : logger;
-        realWorker = new InnerWorker(this.name);
-        realWorker.start();
+        new InnerWorker(name).start();
     }
     
     public String getName() {
@@ -98,7 +95,6 @@ public final class TaskExecuteWorker implements NacosTaskProcessor, Closeable {
     public void shutdown() throws NacosException {
         queue.clear();
         closed.compareAndSet(false, true);
-        realWorker.interrupt();
     }
     
     /**
@@ -123,7 +119,7 @@ public final class TaskExecuteWorker implements NacosTaskProcessor, Closeable {
                         log.warn("task {} takes {}ms", task, duration);
                     }
                 } catch (Throwable e) {
-                    log.error("[TASK-FAILED] " + e, e);
+                    log.error("[TASK-FAILED] " + e.toString(), e);
                 }
             }
         }

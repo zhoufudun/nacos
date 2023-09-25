@@ -21,9 +21,7 @@ import com.alibaba.nacos.api.config.remote.response.ConfigPublishResponse;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.remote.request.RequestMeta;
 import com.alibaba.nacos.api.remote.response.ResponseCode;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
 import com.alibaba.nacos.sys.env.EnvUtil;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,18 +37,11 @@ public class ConfigPublishRequestHandlerTest {
     private ConfigPublishRequestHandler configPublishRequestHandler;
     
     @Mock
-    private ConfigInfoPersistService configInfoPersistService;
-    
-    @Mock
-    private ConfigInfoTagPersistService configInfoTagPersistService;
-    
-    @Mock
-    private ConfigInfoBetaPersistService configInfoBetaPersistService;
+    private PersistService persistService;
     
     @Before
     public void setUp() {
-        configPublishRequestHandler = new ConfigPublishRequestHandler(configInfoPersistService,
-                configInfoTagPersistService, configInfoBetaPersistService);
+        configPublishRequestHandler = new ConfigPublishRequestHandler(persistService);
         EnvUtil.setEnvironment(new StandardEnvironment());
     }
     

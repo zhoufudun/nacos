@@ -16,13 +16,9 @@
 
 package com.alibaba.nacos.console.controller;
 
-import com.alibaba.nacos.config.server.service.ConfigReadinessCheckService;
-import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
-import com.alibaba.nacos.core.cluster.health.ModuleHealthCheckerHolder;
-import com.alibaba.nacos.naming.cluster.NamingReadinessCheckService;
-import com.alibaba.nacos.naming.cluster.ServerStatus;
-import com.alibaba.nacos.naming.cluster.ServerStatusManager;
-import org.junit.After;
+import com.alibaba.nacos.common.utils.JacksonUtils;
+import com.alibaba.nacos.config.server.service.repository.PersistService;
+import com.alibaba.nacos.naming.controllers.OperatorController;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,88 +26,82 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.lang.reflect.Field;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
 import static org.mockito.ArgumentMatchers.any;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = MockServletContext.class)
+@WebAppConfiguration
 public class HealthControllerTest {
     
     @InjectMocks
     private HealthController healthController;
     
     @Mock
-    private ConfigInfoPersistService configInfoPersistService;
+    private PersistService persistService;
     
     @Mock
-    private ServerStatusManager serverStatusManager;
+    private OperatorController apiCommands;
+    
+    private MockMvc mockmvc;
     
     @Before
     public void setUp() {
-        // auto register to module health checker holder.
-        new NamingReadinessCheckService(serverStatusManager);
-        new ConfigReadinessCheckService(configInfoPersistService);
-    }
-    
-    @After
-    public void tearDown() throws IllegalAccessException, NoSuchFieldException {
-        Field moduleHealthCheckersField = ModuleHealthCheckerHolder.class.getDeclaredField("moduleHealthCheckers");
-        moduleHealthCheckersField.setAccessible(true);
-        ((List) moduleHealthCheckersField.get(ModuleHealthCheckerHolder.getInstance())).clear();
+        mockmvc = MockMvcBuilders.standaloneSetup(healthController).build();
     }
     
     @Test
     public void testLiveness() throws Exception {
-        ResponseEntity<String> response = healthController.liveness();
-        Assert.assertEquals(200, response.getStatusCodeValue());
+        String url = "/v1/console/health/liveness";
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get(url);
+        Assert.assertEquals(200, mockmvc.perform(builder).andReturn().getResponse().getStatus());
     }
     
     @Test
-    public void testReadinessSuccess() throws Exception {
+    public void testReadiness() throws Exception {
+        String url = "/v1/console/health/readiness";
         
-        Mockito.when(configInfoPersistService.configInfoCount(any(String.class))).thenReturn(0);
-        Mockito.when(serverStatusManager.getServerStatus()).thenReturn(ServerStatus.UP);
-        ResponseEntity<String> response = healthController.readiness(null);
-        Assert.assertEquals(200, response.getStatusCodeValue());
-        Assert.assertEquals("OK", response.getBody());
-    }
-    
-    @Test
-    public void testReadinessBothFailure() {
+        Mockito.when(persistService.configInfoCount(any(String.class))).thenReturn(0);
+        Mockito.when(apiCommands.metrics(any(HttpServletRequest.class))).thenReturn(JacksonUtils.createEmptyJsonNode());
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.get(url);
+        Assert.assertEquals(200, mockmvc.perform(builder).andReturn().getResponse().getStatus());
+        
         // Config and Naming are not in readiness
-        Mockito.when(configInfoPersistService.configInfoCount(any(String.class)))
+        Mockito.when(persistService.configInfoCount(any(String.class)))
                 .thenThrow(new RuntimeException("HealthControllerTest.testReadiness"));
-        Mockito.when(serverStatusManager.getServerStatus())
+        Mockito.when(apiCommands.metrics(any(HttpServletRequest.class)))
                 .thenThrow(new RuntimeException("HealthControllerTest.testReadiness"));
-        ResponseEntity<String> response = healthController.readiness(null);
-        Assert.assertEquals(500, response.getStatusCodeValue());
-        Assert.assertEquals("naming and config not in readiness", response.getBody());
-    }
-    
-    @Test
-    public void testReadinessConfigFailure() {
+        builder = MockMvcRequestBuilders.get(url);
+        MockHttpServletResponse response = mockmvc.perform(builder).andReturn().getResponse();
+        Assert.assertEquals(500, response.getStatus());
+        Assert.assertEquals("Config and Naming are not in readiness", response.getContentAsString());
+        
         // Config is not in readiness
-        Mockito.when(configInfoPersistService.configInfoCount(any(String.class)))
+        Mockito.when(persistService.configInfoCount(any(String.class)))
                 .thenThrow(new RuntimeException("HealthControllerTest.testReadiness"));
-        Mockito.when(serverStatusManager.getServerStatus()).thenReturn(ServerStatus.UP);
-        ResponseEntity<String> response = healthController.readiness(null);
-        Assert.assertEquals(500, response.getStatusCodeValue());
-        Assert.assertEquals("config not in readiness", response.getBody());
-    }
-    
-    @Test
-    public void testReadinessNamingFailure() {
+        Mockito.when(apiCommands.metrics(any(HttpServletRequest.class))).thenReturn(JacksonUtils.createEmptyJsonNode());
+        response = mockmvc.perform(builder).andReturn().getResponse();
+        Assert.assertEquals(500, response.getStatus());
+        Assert.assertEquals("Config is not in readiness", response.getContentAsString());
+        
         // Naming is not in readiness
-        Mockito.when(configInfoPersistService.configInfoCount(any(String.class))).thenReturn(0);
-        Mockito.when(serverStatusManager.getServerStatus())
+        Mockito.when(persistService.configInfoCount(any(String.class))).thenReturn(0);
+        Mockito.when(apiCommands.metrics(any(HttpServletRequest.class)))
                 .thenThrow(new RuntimeException("HealthControllerTest.testReadiness"));
-        ResponseEntity<String> response = healthController.readiness(null);
-        Assert.assertEquals(500, response.getStatusCodeValue());
-        Assert.assertEquals("naming not in readiness", response.getBody());
+        builder = MockMvcRequestBuilders.get(url);
+        response = mockmvc.perform(builder).andReturn().getResponse();
+        Assert.assertEquals(500, response.getStatus());
+        Assert.assertEquals("Naming is not in readiness", response.getContentAsString());
     }
-    
 }

@@ -59,11 +59,6 @@ public enum ConfigType {
     YAML("yaml"),
     
     /**
-     * config type is "toml".
-     */
-    TOML("toml"),
-    
-    /**
      * not a real type.
      */
     UNSET("unset");

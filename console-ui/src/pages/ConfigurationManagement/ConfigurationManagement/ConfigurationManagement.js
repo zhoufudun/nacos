@@ -43,14 +43,13 @@ import ShowCodeing from 'components/ShowCodeing';
 import DeleteDialog from 'components/DeleteDialog';
 import DashboardCard from './DashboardCard';
 import { getParams, setParams, request } from '@/globalLib';
-import { goLogin } from '../../../globalLib';
 import { connect } from 'react-redux';
-import { getConfigs, getConfigsV2 } from '../../../reducers/configuration';
+import { getConfigs } from '../../../reducers/configuration';
 import PageTitle from '../../../components/PageTitle';
 import QueryResult from '../../../components/QueryResult';
 
 import './index.scss';
-import { LANGUAGE_KEY, GLOBAL_PAGE_SIZE_LIST, LOGINPAGE_ENABLED } from '../../../constants';
+import { LANGUAGE_KEY, GLOBAL_PAGE_SIZE_LIST } from '../../../constants';
 
 const { Item } = MenuButton;
 const { Panel } = Collapse;
@@ -59,7 +58,7 @@ const configsTableSelected = new Map();
   state => ({
     configurations: state.configuration.configurations,
   }),
-  { getConfigs, getConfigsV2 }
+  { getConfigs }
 )
 @ConfigProvider.config
 class ConfigurationManagement extends React.Component {
@@ -75,7 +74,7 @@ class ConfigurationManagement extends React.Component {
     this.deleteDialog = React.createRef();
     this.showcode = React.createRef();
     this.field = new Field(this);
-    this.appName = getParams('appName') || '';
+    this.appName = getParams('appName') || getParams('edasAppId') || '';
     this.preAppName = this.appName;
     this.group = getParams('group') || '';
     this.preGroup = this.group;
@@ -85,7 +84,6 @@ class ConfigurationManagement extends React.Component {
     this.edasAppId = getParams('edasAppId') || '';
     this.edasAppName = getParams('edasAppName') || '';
     this.inApp = this.edasAppId;
-    this.isAdvance = getParams('isAdvanceQuery') || false;
     this.state = {
       value: '',
       visible: false,
@@ -99,9 +97,8 @@ class ConfigurationManagement extends React.Component {
       dataId: this.dataId,
       group: this.group,
       appName: this.appName,
-      config_detail: getParams('configDetail') || '',
-      config_tags: getParams('configTags') ? getParams('configTags').split(',') : [],
-      tagLst: getParams('tagList') ? getParams('tagList').split(',') : [],
+      config_tags: [],
+      tagLst: [],
       selectValue: [],
       loading: false,
       groupList: [],
@@ -109,13 +106,12 @@ class ConfigurationManagement extends React.Component {
       tenant: true,
       nownamespace_id: window.nownamespace || '',
       nownamespace_name: window.namespaceShowName || '',
-      nownamespace_desc: window.namespaceDesc || '',
       selectedRecord: [],
       selectedKeys: [],
       hasdash: false,
       isCn: true,
       contentList: [],
-      isAdvancedQuery: this.isAdvance,
+      isAdvancedQuery: false,
       isCheckAll: false,
       rowSelection: {
         onChange: this.configDataTableOnChange.bind(this),
@@ -253,7 +249,7 @@ class ConfigurationManagement extends React.Component {
         params.group = '*' + params.group + '*';
       }
     }
-    if (this.state.defaultFuzzySearch) {
+    if (params.dataId.indexOf('*') !== -1 || params.group.indexOf('*') !== -1) {
       params.search = 'blur';
     } else {
       params.search = 'accurate';
@@ -284,18 +280,8 @@ class ConfigurationManagement extends React.Component {
     setParams('pageNo', null);
     this.changeParamsBySearchType(params);
     this.setState({ loading: true });
-    let props = null;
-    if (this.state.config_detail && this.state.config_detail !== '') {
-      if (this.state.defaultFuzzySearch) {
-        params.config_detail = '*' + this.state.config_detail + '*';
-      } else {
-        params.config_detail = this.state.config_detail;
-      }
-      props = this.props.getConfigsV2(params);
-    } else {
-      props = this.props.getConfigs(params);
-    }
-    props
+    this.props
+      .getConfigs(params)
       .then(() =>
         this.setState({
           loading: false,
@@ -453,19 +439,11 @@ class ConfigurationManagement extends React.Component {
     this.setState({ pageSize }, () => this.changePage(1));
   }
 
-  setConfigDetail(value) {
-    this.setState({
-      config_detail: value,
-    });
-    setParams('configDetail', value);
-  }
-
   setAppName(value) {
     this.appName = value;
     this.setState({
       appName: value,
     });
-    setParams('appName', value);
   }
 
   setConfigTags(value) {
@@ -473,13 +451,6 @@ class ConfigurationManagement extends React.Component {
       config_tags: value || [],
       tagLst: value,
     });
-    if (!value) {
-      setParams('tagList', '');
-      setParams('configTags', '');
-    } else {
-      setParams('tagList', value.join(','));
-      setParams('configTags', value.join(','));
-    }
   }
 
   /**
@@ -490,7 +461,6 @@ class ConfigurationManagement extends React.Component {
     this.setState({
       group: value || '',
     });
-    setParams('group', value);
   }
 
   handleDefaultFuzzySwitchChange = () => {
@@ -500,6 +470,9 @@ class ConfigurationManagement extends React.Component {
   };
 
   selectAll() {
+    setParams('dataId', this.dataId);
+    setParams('group', this.group);
+    setParams('appName', this.appName);
     this.getData();
   }
 
@@ -513,11 +486,10 @@ class ConfigurationManagement extends React.Component {
     );
   }
 
-  setNowNameSpace(name, id, desc) {
+  setNowNameSpace(name, id) {
     this.setState({
       nownamespace_name: name,
       nownamespace_id: id,
-      nownamespace_desc: desc,
     });
   }
 
@@ -548,17 +520,7 @@ class ConfigurationManagement extends React.Component {
     );
   }
 
-  clear = () => {
-    this.setAppName('');
-    this.setConfigTags([]);
-    this.setConfigDetail('');
-  };
-
   changeAdvancedQuery = () => {
-    setParams('isAdvanceQuery', !this.state.isAdvancedQuery);
-    if (this.state.isAdvancedQuery) {
-      this.clear();
-    }
     this.setState({
       isAdvancedQuery: !this.state.isAdvancedQuery,
     });
@@ -620,7 +582,7 @@ class ConfigurationManagement extends React.Component {
     if (newVersion) {
       this.openUri('v1/cs/configs', {
         exportV2: 'true',
-        tenant: getParams('namespace'),
+        tenant: '',
         group: '',
         appName: '',
         ids: ids.join(','),
@@ -630,7 +592,7 @@ class ConfigurationManagement extends React.Component {
     } else {
       this.openUri('v1/cs/configs', {
         export: 'true',
-        tenant: getParams('namespace'),
+        tenant: '',
         group: '',
         appName: '',
         ids: ids.join(','),
@@ -1016,22 +978,12 @@ class ConfigurationManagement extends React.Component {
     const { locale = {} } = this.props;
     const self = this;
     self.field.setValue('sameConfigPolicy', 'ABORT');
-
-    const _LOGINPAGE_ENABLED = localStorage.getItem(LOGINPAGE_ENABLED);
     let token = {};
-
-    if (_LOGINPAGE_ENABLED !== 'false') {
-      try {
-        token = JSON.parse(localStorage.token);
-      } catch (e) {
-        console.log(e);
-        goLogin();
-        Dialog.alert({
-          title: locale.importFail,
-          content: locale.authFail,
-        });
-        return;
-      }
+    try {
+      token = JSON.parse(localStorage.token);
+    } catch (e) {
+      console.log(e);
+      goLogin();
     }
     const { accessToken = '', username = '' } = token;
     const uploadProps = {
@@ -1148,9 +1100,7 @@ class ConfigurationManagement extends React.Component {
             <div style={{ display: this.inApp ? 'none' : 'block' }}>
               <PageTitle
                 title={locale.configurationManagement8}
-                desc={this.state.nownamespace_desc}
-                namespaceId={this.state.nownamespace_id}
-                namespaceName={this.state.nownamespace_name}
+                desc={this.state.nownamespace_id}
                 nameSpace
               />
               <RegionGroup
@@ -1163,8 +1113,8 @@ class ConfigurationManagement extends React.Component {
               style={{
                 position: 'relative',
                 marginTop: 10,
-                height: 'auto',
-                overflow: 'visible',
+                height: this.state.isAdvancedQuery ? 'auto' : 42,
+                overflow: 'hidden',
               }}
             >
               <Form inline>
@@ -1184,7 +1134,6 @@ class ConfigurationManagement extends React.Component {
                     onChange={dataId => {
                       this.dataId = dataId;
                       this.setState({ dataId });
-                      setParams('dataId', this.dataId);
                     }}
                     onPressEnter={() => this.selectAll()}
                   />
@@ -1205,13 +1154,13 @@ class ConfigurationManagement extends React.Component {
                   />
                 </Form.Item>
 
-                <Form.Item label={locale.fuzzydMode}>
+                <Form.Item label="默认模糊匹配">
                   <Switch
                     checkedChildren=""
                     unCheckedChildren=""
                     defaultChecked={this.state.defaultFuzzySearch}
                     onChange={this.handleDefaultFuzzySwitchChange}
-                    title={locale.fuzzyd}
+                    title={'自动在搜索参数前后加上*'}
                   />
                 </Form.Item>
 
@@ -1258,16 +1207,7 @@ class ConfigurationManagement extends React.Component {
                   </Button>
                 </Form.Item>
                 <br />
-                <Form.Item
-                  style={
-                    this.inApp
-                      ? { display: 'none' }
-                      : this.state.isAdvancedQuery
-                      ? {}
-                      : { display: 'none' }
-                  }
-                  label={locale.application}
-                >
+                <Form.Item style={this.inApp ? { display: 'none' } : {}} label={locale.application}>
                   <Input
                     htmlType={'text'}
                     placeholder={locale.app1}
@@ -1277,10 +1217,7 @@ class ConfigurationManagement extends React.Component {
                     onPressEnter={() => this.getData()}
                   />
                 </Form.Item>
-                <Form.Item
-                  style={this.state.isAdvancedQuery ? {} : { display: 'none' }}
-                  label={locale.tags}
-                >
+                <Form.Item label={locale.tags}>
                   <Select
                     style={{ width: 200 }}
                     size="medium"
@@ -1295,25 +1232,28 @@ class ConfigurationManagement extends React.Component {
                       const { tagLst } = this.state;
                       if (!tagLst.includes(val)) {
                         this.setState({ tagLst: tagLst.concat(val) });
-                        setParams('tagList', this.state.tagLst.join(','));
                       }
                     }}
                     hasClear
                   />
                 </Form.Item>
-                <Form.Item
-                  style={this.state.isAdvancedQuery ? {} : { display: 'none' }}
-                  label={locale.configDetailLabel}
-                >
-                  <Input
-                    htmlType={'text'}
-                    placeholder={locale.configDetailH}
-                    style={{ width: 200 }}
-                    value={this.state.config_detail}
-                    onChange={this.setConfigDetail.bind(this)}
-                  />
-                </Form.Item>
               </Form>
+              <div style={{ position: 'absolute', right: 10, top: 0 }}>
+                <Icon
+                  type="add"
+                  size="medium"
+                  style={{
+                    color: 'black',
+                    marginRight: 0,
+                    verticalAlign: 'middle',
+                    cursor: 'pointer',
+                    backgroundColor: '#eee',
+                    border: '1px solid #ddd',
+                    padding: '3px 6px',
+                  }}
+                  onClick={this.chooseEnv.bind(this)}
+                />
+              </div>
             </div>
             <QueryResult total={configurations.totalCount} />
 
@@ -1349,9 +1289,8 @@ class ConfigurationManagement extends React.Component {
                       locaid: 'configsDelete',
                       onClick: () => this.cloneSelectedDataConfirm(),
                     },
-                  ].map((item, index) => (
+                  ].map(item => (
                     <Button
-                      key={index}
                       warning={item.warning}
                       type="primary"
                       style={{ marginRight: 10 }}
