@@ -57,7 +57,7 @@ public class WatchFileCenter {
      * Maximum number of monitored file directories.
      */
     private static final int MAX_WATCH_FILE_JOB = Integer.getInteger("nacos.watch-file.max-dirs", 16);
-    
+    // key = dir, value=监控job
     private static final Map<String, WatchDirJob> MANAGER = new HashMap<String, WatchDirJob>(MAX_WATCH_FILE_JOB);
     
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
@@ -87,14 +87,14 @@ public class WatchFileCenter {
         if (NOW_WATCH_JOB_CNT == MAX_WATCH_FILE_JOB) {
             return false;
         }
-        WatchDirJob job = MANAGER.get(paths);
+        WatchDirJob job = MANAGER.get(paths); // path: "C:\Users\Administrator\nacos\conf"
         if (job == null) {
             job = new WatchDirJob(paths);
             job.start();
             MANAGER.put(paths, job);
             NOW_WATCH_JOB_CNT++;
         }
-        job.addSubscribe(watcher);
+        job.addSubscribe(watcher); // watcher=StartingApplicationListener$1@hashcode,  给C:\Users\Administrator\nacos\conf下的文件变化添加一个回调处理者
         return true;
     }
     
@@ -156,27 +156,27 @@ public class WatchFileCenter {
         
         private ExecutorService callBackExecutor;
         
-        private final String paths;
+        private final String paths; // C:\Users\Administrator\nacos\conf
         
         private WatchService watchService;
         
         private volatile boolean watch = true;
         
-        private Set<FileWatcher> watchers = new ConcurrentHashSet<>();
+        private Set<FileWatcher> watchers = new ConcurrentHashSet<>(); // 该目录下的多个监听者
         
         public WatchDirJob(String paths) throws NacosException {
-            setName(paths);
-            this.paths = paths;
+            setName(paths); // 设置线程名称为目录名称
+            this.paths = paths; // C:\Users\Administrator\nacos\conf
             final Path p = Paths.get(paths);
             if (!p.toFile().isDirectory()) {
                 throw new IllegalArgumentException("Must be a file directory : " + paths);
             }
-            
+            // 创建回调执行器：执行文件变化后的处理逻辑
             this.callBackExecutor = ExecutorFactory
                     .newSingleExecutorService(new NameThreadFactory("com.alibaba.nacos.sys.file.watch-" + paths));
             
             try {
-                WatchService service = FILE_SYSTEM.newWatchService();
+                WatchService service = FILE_SYSTEM.newWatchService(); // WindowWatchService
                 p.register(service, StandardWatchEventKinds.OVERFLOW, StandardWatchEventKinds.ENTRY_MODIFY,
                         StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
                 this.watchService = service;
@@ -198,7 +198,7 @@ public class WatchFileCenter {
         public void run() {
             while (watch) {
                 try {
-                    final WatchKey watchKey = watchService.take();
+                    final WatchKey watchKey = watchService.take(); // 阻塞获取变化的事件
                     final List<WatchEvent<?>> events = watchKey.pollEvents();
                     watchKey.reset();
                     if (callBackExecutor.isShutdown()) {
@@ -226,22 +226,22 @@ public class WatchFileCenter {
                 }
             }
         }
-        
+        // 目录下的文件变化后的处理逻辑
         private void eventProcess(Object context) {
             final FileChangeEvent fileChangeEvent = FileChangeEvent.builder().paths(paths).context(context).build();
-            final String str = String.valueOf(context);
+            final String str = String.valueOf(context); // 文件的变化内容
             for (final FileWatcher watcher : watchers) {
-                if (watcher.interest(str)) {
-                    Runnable job = () -> watcher.onChange(fileChangeEvent);
+                if (watcher.interest(str)) { // 该监听者是否对信息感兴趣
+                    Runnable job = () -> watcher.onChange(fileChangeEvent); // 感兴趣的监听者执行回调
                     Executor executor = watcher.executor();
                     if (executor == null) {
                         try {
-                            job.run();
+                            job.run(); // 某个具体的FileWatcher没有设置线程池，则使用WatchDirJob线程执行回调处理
                         } catch (Throwable ex) {
                             LOGGER.error("File change event callback error : ", ex);
                         }
                     } else {
-                        executor.execute(job);
+                        executor.execute(job); // 某个具体的FileWatcher设置了线程池，用设置的线程池执行回调处理
                     }
                 }
             }

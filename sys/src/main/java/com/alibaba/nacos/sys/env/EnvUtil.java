@@ -254,7 +254,7 @@ public class EnvUtil {
             if (StringUtils.isBlank(nacosHome)) {
                 nacosHome = Paths.get(System.getProperty(NACOS_HOME_PROPERTY), NACOS_HOME_ADDITIONAL_FILEPATH).toString();
             }
-            return nacosHome;
+            return nacosHome;  // C:\Users\Administrator\nacos
         }
         // test-first
         return nacosHomePath;
@@ -294,7 +294,7 @@ public class EnvUtil {
         if (StringUtils.isNotBlank(EnvUtil.confPath)) {
             return EnvUtil.confPath;
         }
-        EnvUtil.confPath = Paths.get(getNacosHome(), DEFAULT_ADDITIONAL_PATH).toString();
+        EnvUtil.confPath = Paths.get(getNacosHome(), DEFAULT_ADDITIONAL_PATH).toString(); // C:\Users\Administrator\nacos\conf
         return confPath;
     }
     

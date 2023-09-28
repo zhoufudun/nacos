@@ -175,7 +175,7 @@ public class StartingApplicationListener implements NacosApplicationListener {
                     LOGGER.warn("Failed to monitor file ", ignore);
                 }
             }
-            
+            // 这个FileWatcher只对变化的内容包含："application.properties" 感兴趣, 只有满足条件才会执行onChange方法
             @Override
             public boolean interest(String context) {
                 return StringUtils.contains(context, "application.properties");
