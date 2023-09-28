@@ -105,4 +105,5 @@ public class SpringApplicationRunListener implements org.springframework.boot.Sp
     public int getOrder() {
         return HIGHEST_PRECEDENCE;
     }
+
 }
