@@ -75,7 +75,7 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
     
     private final RpcClient rpcClient;
     
-    private final NamingGrpcRedoService redoService;
+    private final NamingGrpcRedoService redoService; // 重试服务
     
     public NamingGrpcClientProxy(String namespaceId, SecurityProxy securityProxy, ServerListFactory serverListFactory,
             Properties properties, ServiceInfoHolder serviceInfoHolder) throws NacosException {
@@ -83,7 +83,7 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
         this.namespaceId = namespaceId;
         this.uuid = UUID.randomUUID().toString();
         this.requestTimeout = Long.parseLong(properties.getProperty(CommonParams.NAMING_REQUEST_TIMEOUT, "-1"));
-        Map<String, String> labels = new HashMap<>();
+        Map<String, String> labels = new HashMap<>(); // {module=naming, source=sdk}
         labels.put(RemoteConstants.LABEL_SOURCE, RemoteConstants.LABEL_SOURCE_SDK);
         labels.put(RemoteConstants.LABEL_MODULE, RemoteConstants.LABEL_MODULE_NAMING);
         this.rpcClient = RpcClientFactory.createClient(uuid, ConnectionType.GRPC, labels);
@@ -252,7 +252,7 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
     public ServiceInfo doSubscribe(String serviceName, String groupName, String clusters) throws NacosException {
         SubscribeServiceRequest request = new SubscribeServiceRequest(namespaceId, groupName, serviceName, clusters,
                 true);
-        SubscribeServiceResponse response = requestToServer(request, SubscribeServiceResponse.class);
+        SubscribeServiceResponse response = requestToServer(request, SubscribeServiceResponse.class); // 向服务端发起订阅操作：SubscribeServiceRequest
         redoService.subscriberRegistered(serviceName, groupName, clusters);
         return response.getServiceInfo();
     }

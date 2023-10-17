@@ -69,14 +69,14 @@ public abstract class RpcClient implements Closeable {
     
     private ServerListFactory serverListFactory;
     
-    protected BlockingQueue<ConnectionEvent> eventLinkedBlockingQueue = new LinkedBlockingQueue<>();
+    protected BlockingQueue<ConnectionEvent> eventLinkedBlockingQueue = new LinkedBlockingQueue<>(); // 存放连接事件类型
     
     protected volatile AtomicReference<RpcClientStatus> rpcClientStatus = new AtomicReference<>(
             RpcClientStatus.WAIT_INIT);
     
     protected ScheduledExecutorService clientEventExecutor;
     
-    private final BlockingQueue<ReconnectContext> reconnectionSignal = new ArrayBlockingQueue<>(1);
+    private final BlockingQueue<ReconnectContext> reconnectionSignal = new ArrayBlockingQueue<>(1); // 存放需要从连服务端的客户端
     
     protected volatile Connection currentConnection;
     
@@ -181,7 +181,7 @@ public abstract class RpcClient implements Closeable {
         LoggerUtils.printIfInfoEnabled(LOGGER, "[{}] Notify connected event to listeners.", rpcClientConfig.name());
         for (ConnectionEventListener connectionEventListener : connectionEventListeners) {
             try {
-                connectionEventListener.onConnected();
+                connectionEventListener.onConnected();  // 回调连接成功事件的监听者
             } catch (Throwable throwable) {
                 LoggerUtils.printIfErrorEnabled(LOGGER, "[{}] Notify connect listener error, listener = {}",
                         rpcClientConfig.name(), connectionEventListener.getClass().getName());
@@ -257,11 +257,11 @@ public abstract class RpcClient implements Closeable {
         });
         
         // connection event consumer.
-        clientEventExecutor.submit(() -> {
+        clientEventExecutor.submit(() -> {  // 处理连接成功事件线程
             while (!clientEventExecutor.isTerminated() && !clientEventExecutor.isShutdown()) {
                 ConnectionEvent take;
                 try {
-                    take = eventLinkedBlockingQueue.take();
+                    take = eventLinkedBlockingQueue.take();  // 获取连接事件，处理连接
                     if (take.isConnected()) {
                         notifyConnected();
                     } else if (take.isDisConnected()) {
@@ -279,7 +279,7 @@ public abstract class RpcClient implements Closeable {
                     if (isShutdown()) {
                         break;
                     }
-                    ReconnectContext reconnectContext = reconnectionSignal
+                    ReconnectContext reconnectContext = reconnectionSignal      // 处理客户端从连服务端
                             .poll(rpcClientConfig.connectionKeepAlive(), TimeUnit.MILLISECONDS);
                     if (reconnectContext == null) {
                         // check alive time.
@@ -372,7 +372,7 @@ public abstract class RpcClient implements Closeable {
                             connectToServer.getConnectionId());
             this.currentConnection = connectToServer;
             rpcClientStatus.set(RpcClientStatus.RUNNING);
-            eventLinkedBlockingQueue.offer(new ConnectionEvent(ConnectionEvent.CONNECTED));
+            eventLinkedBlockingQueue.offer(new ConnectionEvent(ConnectionEvent.CONNECTED)); // 客户端连接服务端成功后，将连接连接事件加入队列，clientEventExecutor线程池会不断从队列获取连接事件，处理连接
         } else {
             switchServerAsync();
         }
@@ -493,9 +493,9 @@ public abstract class RpcClient implements Closeable {
                 // 1.get a new server
                 ServerInfo serverInfo = null;
                 try {
-                    serverInfo = recommendServer.get() == null ? nextRpcServer() : recommendServer.get();
+                    serverInfo = recommendServer.get() == null ? nextRpcServer() : recommendServer.get(); // 获取一个远程服务地址
                     // 2.create a new channel to new server
-                    Connection connectionNew = connectToServer(serverInfo);
+                    Connection connectionNew = connectToServer(serverInfo); // 连接远程服务
                     if (connectionNew != null) {
                         LoggerUtils
                                 .printIfInfoEnabled(LOGGER, "[{}] Success to connect a server [{}], connectionId = {}",
@@ -514,7 +514,7 @@ public abstract class RpcClient implements Closeable {
                         currentConnection = connectionNew;
                         rpcClientStatus.set(RpcClientStatus.RUNNING);
                         switchSuccess = true;
-                        eventLinkedBlockingQueue.add(new ConnectionEvent(ConnectionEvent.CONNECTED));
+                        eventLinkedBlockingQueue.add(new ConnectionEvent(ConnectionEvent.CONNECTED)); // 连接成功加入换成队列
                         return;
                     }
                     
@@ -816,7 +816,7 @@ public abstract class RpcClient implements Closeable {
         lastActiveTimeStamp = System.currentTimeMillis();
         for (ServerRequestHandler serverRequestHandler : serverRequestHandlers) {
             try {
-                Response response = serverRequestHandler.requestReply(request);
+                Response response = serverRequestHandler.requestReply(request); // 服务端推送信息给客户端
                 
                 if (response != null) {
                     LoggerUtils.printIfInfoEnabled(LOGGER, "[{}] Ack server push request, request = {}, requestId = {}",

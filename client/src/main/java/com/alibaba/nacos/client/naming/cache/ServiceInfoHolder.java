@@ -70,7 +70,7 @@ public class ServiceInfoHolder implements Closeable {
     
     public ServiceInfoHolder(String namespace, String notifierEventScope, Properties properties) {
         initCacheDir(namespace, properties);
-        if (isLoadCacheAtStart(properties)) {
+        if (isLoadCacheAtStart(properties)) {  // 是否启动的是否从本地磁盘加载
             this.serviceInfoMap = new ConcurrentHashMap<>(DiskCache.read(this.cacheDir));
         } else {
             this.serviceInfoMap = new ConcurrentHashMap<>(16);
@@ -93,7 +93,7 @@ public class ServiceInfoHolder implements Closeable {
                     + File.separator + FILE_PATH_NAMING + File.separator + namespace;
         } else {
             cacheDir = System.getProperty(USER_HOME_PROPERTY) + File.separator + FILE_PATH_NACOS + namingCacheRegistryDir
-                    + File.separator + FILE_PATH_NAMING + File.separator + namespace;
+                    + File.separator + FILE_PATH_NAMING + File.separator + namespace;  // C:\Users\Administrator\nacos\naming\public
         }
     }
     
@@ -165,12 +165,12 @@ public class ServiceInfoHolder implements Closeable {
             serviceInfo.setJsonFromServer(JacksonUtils.toJson(serviceInfo));
         }
         MetricsMonitor.getServiceInfoMapSizeMonitor().set(serviceInfoMap.size());
-        if (changed) {
+        if (changed) {  // 服务端推送消息给客户端，客户端检查到服务列表和本地的不同，更新本地缓存的服务列表
             NAMING_LOGGER.info("current ips:({}) service: {} -> {}", serviceInfo.ipCount(), serviceInfo.getKey(),
                     JacksonUtils.toJson(serviceInfo.getHosts()));
             NotifyCenter.publishEvent(new InstancesChangeEvent(notifierEventScope, serviceInfo.getName(), serviceInfo.getGroupName(),
-                    serviceInfo.getClusters(), serviceInfo.getHosts()));
-            DiskCache.write(serviceInfo, cacheDir);
+                    serviceInfo.getClusters(), serviceInfo.getHosts())); // 变更事件推送到队列，由其他Publisher从队列拉去事件推送给监听者
+            DiskCache.write(serviceInfo, cacheDir); // 更新到本地磁盘
         }
         return serviceInfo;
     }

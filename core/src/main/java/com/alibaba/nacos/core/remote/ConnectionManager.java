@@ -731,7 +731,7 @@ public class ConnectionManager extends Subscriber<ConnectionLimitRuleChangeEvent
         return new File(baseDir, RULE_FILE_NAME);
     }
     
-    private void registerFileWatch() {
+    private void registerFileWatch() {  // 监控文件的变化
         try {
             String tpsPath = Paths.get(EnvUtil.getNacosHome(), "data", "loader").toString();
             WatchFileCenter.registerWatcher(tpsPath, new FileWatcher() {

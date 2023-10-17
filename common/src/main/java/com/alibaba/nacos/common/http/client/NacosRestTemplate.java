@@ -47,7 +47,7 @@ import java.util.Map;
  */
 public class NacosRestTemplate extends AbstractNacosRestTemplate {
     
-    private final HttpClientRequest requestClient;
+    private final HttpClientRequest requestClient; // JdkHttpClientRequest
     
     private final List<HttpClientRequestInterceptor> interceptors = new ArrayList<>();
     
@@ -471,7 +471,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
     @SuppressWarnings("unchecked")
     private <T> HttpRestResult<T> execute(String url, String httpMethod, RequestHttpEntity requestEntity,
             Type responseType) throws Exception {
-        URI uri = HttpUtils.buildUri(url, requestEntity.getQuery());
+        URI uri = HttpUtils.buildUri(url, requestEntity.getQuery()); // 举例：http://127.0.0.1:8848/nacos/v1/ns/operator/switches?entry=overriddenServerStatus&value=UP、  http://127.0.0.1:8848/nacos/v1/ns/service?app=unknown&groupName=DEFAULT_GROUP&metadata=%7B%22jinhanI06Yv.76272.net%22%3A%22this+is+a+register+metadata%22%7D&namespaceId=public&selector=%7B%22type%22%3A%22label%22%2C%22expression%22%3A%22CONSUMER.label.A%3DPROVIDER.label.A+%26CONSUMER.label.B%3DPROVIDER.label.B%22%7D&serviceName=jinhanI06Yv.76272.net&protectThreshold=1.0
         if (logger.isDebugEnabled()) {
             logger.debug("HTTP method: {}, url: {}, body: {}", httpMethod, uri, requestEntity.getBody());
         }

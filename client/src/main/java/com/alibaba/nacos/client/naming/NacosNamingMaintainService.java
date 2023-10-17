@@ -92,7 +92,7 @@ public class NacosNamingMaintainService implements NamingMaintainService {
         });
         this.securityProxy.login(properties);
         this.executorService.scheduleWithFixedDelay(() -> securityProxy.login(properties), 0,
-                SECURITY_INFO_REFRESH_INTERVAL_MILLS, TimeUnit.MILLISECONDS);
+                SECURITY_INFO_REFRESH_INTERVAL_MILLS, TimeUnit.MILLISECONDS); // 开启定时任务，5s检查一次客户端的权限（执行securityProxy.login(properties)）
     
     }
     

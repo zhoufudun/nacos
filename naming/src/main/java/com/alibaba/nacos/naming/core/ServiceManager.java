@@ -140,7 +140,7 @@ public class ServiceManager implements RecordListener<Service> {
             
             GlobalExecutor
                     .scheduleServiceAutoClean(new EmptyServiceAutoCleaner(this, distroMapper), cleanEmptyServiceDelay,
-                            cleanEmptyServicePeriod);
+                            cleanEmptyServicePeriod); // 定时清理空服务
         }
         
         try {
@@ -1076,7 +1076,7 @@ public class ServiceManager implements RecordListener<Service> {
         public void run() {
             try {
                 
-                Map<String, Set<String>> allServiceNames = getAllServiceNames();
+                Map<String, Set<String>> allServiceNames = getAllServiceNames(); // key=namespaceId, value=serviceName集合
                 
                 if (allServiceNames.size() <= 0) {
                     //ignore

@@ -122,7 +122,7 @@ public class EphemeralClientOperationServiceImpl implements ClientOperationServi
         }
     }
     
-    @Override
+    @Override  // 保存哪些客户端订阅了哪些服务的变化通知
     public void subscribeService(Service service, Subscriber subscriber, String clientId) {
         Service singleton = ServiceManager.getInstance().getSingletonIfExist(service).orElse(service);
         Client client = clientManager.getClient(clientId);
@@ -131,7 +131,7 @@ public class EphemeralClientOperationServiceImpl implements ClientOperationServi
         }
         client.addServiceSubscriber(singleton, subscriber);
         client.setLastUpdatedTime();
-        NotifyCenter.publishEvent(new ClientOperationEvent.ClientSubscribeServiceEvent(singleton, clientId));
+        NotifyCenter.publishEvent(new ClientOperationEvent.ClientSubscribeServiceEvent(singleton, clientId)); // 客户端的订阅事件放入队列
     }
     
     @Override

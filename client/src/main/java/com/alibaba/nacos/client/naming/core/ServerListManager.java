@@ -83,7 +83,7 @@ public class ServerListManager implements ServerListFactory, Closeable {
     }
     
     public ServerListManager(Properties properties, String namespace) {
-        this.namespace = namespace;
+        this.namespace = namespace; // public
         initServerAddr(properties);
         if (!serverList.isEmpty()) {
             currentIndex.set(new Random().nextInt(serverList.size()));
@@ -103,11 +103,11 @@ public class ServerListManager implements ServerListFactory, Closeable {
                     .scheduleWithFixedDelay(this::refreshServerListIfNeed, 0, refreshServerListInternal,
                             TimeUnit.MILLISECONDS);
         } else {
-            String serverListFromProps = properties.getProperty(PropertyKeyConst.SERVER_ADDR);
+            String serverListFromProps = properties.getProperty(PropertyKeyConst.SERVER_ADDR); // 127.0.0.1:8848
             if (StringUtils.isNotEmpty(serverListFromProps)) {
                 this.serverList.addAll(Arrays.asList(serverListFromProps.split(",")));
                 if (this.serverList.size() == 1) {
-                    this.nacosDomain = serverListFromProps;
+                    this.nacosDomain = serverListFromProps; // 如果服务端只有一个节点，那么这个节点就是主节点
                 }
             }
         }

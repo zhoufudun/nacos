@@ -190,10 +190,10 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
      * @param cluster     cluster
      */
     public void cacheSubscriberForRedo(String serviceName, String groupName, String cluster) {
-        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);
-        SubscriberRedoData redoData = SubscriberRedoData.build(serviceName, groupName, cluster);
+        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster); // DEFAULT_GROUP@@MOCK_SERVER_NAME
+        SubscriberRedoData redoData = SubscriberRedoData.build(serviceName, groupName, cluster); // 订阅者重新订阅信息
         synchronized (subscribes) {
-            subscribes.put(key, redoData);
+            subscribes.put(key, redoData); // 缓存订阅者重新订阅信息
         }
     }
     

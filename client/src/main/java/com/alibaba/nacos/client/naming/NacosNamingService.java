@@ -70,7 +70,7 @@ public class NacosNamingService implements NamingService {
     
     private InstancesChangeNotifier changeNotifier;
     
-    private NamingClientProxy clientProxy;
+    private NamingClientProxy clientProxy; // com.alibaba.nacos.client.naming.remote.NamingClientProxyDelegate@5f771b9f
     
     private String notifierEventScope;
     
@@ -86,15 +86,15 @@ public class NacosNamingService implements NamingService {
     
     private void init(Properties properties) throws NacosException {
         ValidatorUtils.checkInitParam(properties);
-        this.namespace = InitUtils.initNamespaceForNaming(properties);
+        this.namespace = InitUtils.initNamespaceForNaming(properties); // public
         InitUtils.initSerialization();
         InitUtils.initWebRootContext(properties);
         initLogName(properties);
     
         this.notifierEventScope = UUID.randomUUID().toString();
-        this.changeNotifier = new InstancesChangeNotifier(this.notifierEventScope);
-        NotifyCenter.registerToPublisher(InstancesChangeEvent.class, 16384);
-        NotifyCenter.registerSubscriber(changeNotifier);
+        this.changeNotifier = new InstancesChangeNotifier(this.notifierEventScope); // A subscriber to notify eventListener callback.
+        NotifyCenter.registerToPublisher(InstancesChangeEvent.class, 16384); // 注册一个消息推送者（本质是一个线程，不断从队列获取事件，推送给订阅者）
+        NotifyCenter.registerSubscriber(changeNotifier); // 注册一个订阅者，使得推送者可以将事件推送给订阅者
         this.serviceInfoHolder = new ServiceInfoHolder(namespace, this.notifierEventScope, properties);
         this.clientProxy = new NamingClientProxyDelegate(this.namespace, serviceInfoHolder, properties, changeNotifier);
     }
@@ -107,7 +107,7 @@ public class NacosNamingService implements NamingService {
                     .isNotEmpty(properties.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME))) {
                 logName = properties.getProperty(UtilAndComs.NACOS_NAMING_LOG_NAME);
             } else {
-                logName = DEFAULT_NAMING_LOG_FILE_PATH;
+                logName = DEFAULT_NAMING_LOG_FILE_PATH; // 日志文件名称：naming.log
             }
         }
     }
@@ -240,7 +240,7 @@ public class NacosNamingService implements NamingService {
                 serviceInfo = clientProxy.subscribe(serviceName, groupName, clusterString);
             }
         } else {
-            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, 0, false);
+            serviceInfo = clientProxy.queryInstancesOfService(serviceName, groupName, clusterString, 0, false); // ServiceQueryRequest
         }
         List<Instance> list;
         if (serviceInfo == null || CollectionUtils.isEmpty(list = serviceInfo.getHosts())) {

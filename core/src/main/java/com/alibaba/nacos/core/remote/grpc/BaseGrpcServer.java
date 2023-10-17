@@ -75,7 +75,8 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
     private GrpcRequestAcceptor grpcCommonRequestAcceptor;
     
     @Autowired
-    private GrpcBiStreamRequestAcceptor grpcBiStreamRequestAcceptor;
+    private GrpcBiStreamRequestAcceptor grpcBiStreamRequestAcceptor; // GrpcBiStreamRequestAcceptor则是双向流的消息处理器。Client与Server首先会通过双向流的Service建立连接，只有建立了连接的客户端才可以发起一元单向请求。从这个消息处理器中我们不难发现，客户端实际上只会通过这个双向流发送连接建立的请求，而后这个流都用来服务端推送消息。其余的请求都是通过另一个一元单向请求来完成的
+
     
     @Autowired
     private ConnectionManager connectionManager;
@@ -90,7 +91,7 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
         final MutableHandlerRegistry handlerRegistry = new MutableHandlerRegistry();
         
         // server interceptor to set connection id.
-        ServerInterceptor serverInterceptor = new ServerInterceptor() {
+        ServerInterceptor serverInterceptor = new ServerInterceptor() {  // ServerInterceptor 是GRPC服务端拦截器
             @Override
             public <T, S> ServerCall.Listener<T> interceptCall(ServerCall<T, S> call, Metadata headers,
                     ServerCallHandler<T, S> next) {
@@ -99,7 +100,7 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
                         .withValue(CONTEXT_KEY_CONN_REMOTE_IP, call.getAttributes().get(TRANS_KEY_REMOTE_IP))
                         .withValue(CONTEXT_KEY_CONN_REMOTE_PORT, call.getAttributes().get(TRANS_KEY_REMOTE_PORT))
                         .withValue(CONTEXT_KEY_CONN_LOCAL_PORT, call.getAttributes().get(TRANS_KEY_LOCAL_PORT));
-                if (REQUEST_BI_STREAM_SERVICE_NAME.equals(call.getMethodDescriptor().getServiceName())) {
+                if (REQUEST_BI_STREAM_SERVICE_NAME.equals(call.getMethodDescriptor().getServiceName())) {  // 判断客户端的请求服务类型
                     Channel internalChannel = getInternalChannel(call);
                     ctx = ctx.withValue(CONTEXT_KEY_CHANNEL, internalChannel);
                 }
@@ -109,13 +110,13 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
         
         addServices(handlerRegistry, serverInterceptor);
         
-        server = ServerBuilder.forPort(getServicePort()).executor(getRpcExecutor())
+        server = ServerBuilder.forPort(getServicePort()).executor(getRpcExecutor()) // 设置服务端的一些参数
                 .maxInboundMessageSize(getInboundMessageSize()).fallbackHandlerRegistry(handlerRegistry)
                 .compressorRegistry(CompressorRegistry.getDefaultInstance())
                 .decompressorRegistry(DecompressorRegistry.getDefaultInstance())
                 .addTransportFilter(new ServerTransportFilter() {
                     @Override
-                    public Attributes transportReady(Attributes transportAttrs) {
+                    public Attributes transportReady(Attributes transportAttrs) { // 连接建立时根据当前的连接的属性构造一个新的Attributes，主要是为每个连接建立一个connectionId。
                         InetSocketAddress remoteAddress = (InetSocketAddress) transportAttrs
                                 .get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
                         InetSocketAddress localAddress = (InetSocketAddress) transportAttrs
@@ -144,7 +145,7 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
                         if (StringUtils.isNotBlank(connectionId)) {
                             Loggers.REMOTE_DIGEST
                                     .info("Connection transportTerminated,connectionId = {} ", connectionId);
-                            connectionManager.unregister(connectionId);
+                            connectionManager.unregister(connectionId);  // 并在连接断开时从connectionManager移除连接
                         }
                     }
                 }).build();
@@ -165,19 +166,19 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
     
     private void addServices(MutableHandlerRegistry handlerRegistry, ServerInterceptor... serverInterceptor) {
         
-        // unary common call register.
-        final MethodDescriptor<Payload, Payload> unaryPayloadMethod = MethodDescriptor.<Payload, Payload>newBuilder()
+        // unary common call register. // 采用手工注册的方式
+        final MethodDescriptor<Payload, Payload> unaryPayloadMethod = MethodDescriptor.<Payload, Payload>newBuilder()  //定义Method
                 .setType(MethodDescriptor.MethodType.UNARY)
-                .setFullMethodName(MethodDescriptor.generateFullMethodName(REQUEST_SERVICE_NAME, REQUEST_METHOD_NAME))
+                .setFullMethodName(MethodDescriptor.generateFullMethodName(REQUEST_SERVICE_NAME, REQUEST_METHOD_NAME)) //定义Method
                 .setRequestMarshaller(ProtoUtils.marshaller(Payload.getDefaultInstance()))
                 .setResponseMarshaller(ProtoUtils.marshaller(Payload.getDefaultInstance())).build();
         
-        final ServerCallHandler<Payload, Payload> payloadHandler = ServerCalls
+        final ServerCallHandler<Payload, Payload> payloadHandler = ServerCalls  //定义服务处理方法回调
                 .asyncUnaryCall((request, responseObserver) -> grpcCommonRequestAcceptor.request(request, responseObserver));
         
-        final ServerServiceDefinition serviceDefOfUnaryPayload = ServerServiceDefinition.builder(REQUEST_SERVICE_NAME)
+        final ServerServiceDefinition serviceDefOfUnaryPayload = ServerServiceDefinition.builder(REQUEST_SERVICE_NAME)  //定义Servie
                 .addMethod(unaryPayloadMethod, payloadHandler).build();
-        handlerRegistry.addService(ServerInterceptors.intercept(serviceDefOfUnaryPayload, serverInterceptor));
+        handlerRegistry.addService(ServerInterceptors.intercept(serviceDefOfUnaryPayload, serverInterceptor)); // 注册Servie
         
         // bi stream register.
         final ServerCallHandler<Payload, Payload> biStreamHandler = ServerCalls.asyncBidiStreamingCall(
@@ -185,13 +186,13 @@ public abstract class BaseGrpcServer extends BaseRpcServer {
         
         final MethodDescriptor<Payload, Payload> biStreamMethod = MethodDescriptor.<Payload, Payload>newBuilder()
                 .setType(MethodDescriptor.MethodType.BIDI_STREAMING).setFullMethodName(MethodDescriptor
-                        .generateFullMethodName(REQUEST_BI_STREAM_SERVICE_NAME, REQUEST_BI_STREAM_METHOD_NAME))
+                        .generateFullMethodName(REQUEST_BI_STREAM_SERVICE_NAME, REQUEST_BI_STREAM_METHOD_NAME))  //定义Method
                 .setRequestMarshaller(ProtoUtils.marshaller(Payload.newBuilder().build()))
                 .setResponseMarshaller(ProtoUtils.marshaller(Payload.getDefaultInstance())).build();
         
-        final ServerServiceDefinition serviceDefOfBiStream = ServerServiceDefinition
+        final ServerServiceDefinition serviceDefOfBiStream = ServerServiceDefinition  //定义Servie
                 .builder(REQUEST_BI_STREAM_SERVICE_NAME).addMethod(biStreamMethod, biStreamHandler).build();
-        handlerRegistry.addService(ServerInterceptors.intercept(serviceDefOfBiStream, serverInterceptor));
+        handlerRegistry.addService(ServerInterceptors.intercept(serviceDefOfBiStream, serverInterceptor)); //注册Servie
         
     }
     

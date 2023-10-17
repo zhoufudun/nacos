@@ -153,11 +153,11 @@ public class NamingClientProxyDelegate implements NamingClientProxy {
     public ServiceInfo subscribe(String serviceName, String groupName, String clusters) throws NacosException {
         NAMING_LOGGER.info("[SUBSCRIBE-SERVICE] service:{}, group:{}, clusters:{} ", serviceName, groupName, clusters);
         String serviceNameWithGroup = NamingUtils.getGroupedName(serviceName, groupName);
-        String serviceKey = ServiceInfo.getKey(serviceNameWithGroup, clusters);
-        serviceInfoUpdateService.scheduleUpdateIfAbsent(serviceName, groupName, clusters);
-        ServiceInfo result = serviceInfoHolder.getServiceInfoMap().get(serviceKey);
-        if (null == result || !isSubscribed(serviceName, groupName, clusters)) {
-            result = grpcClientProxy.subscribe(serviceName, groupName, clusters);
+        String serviceKey = ServiceInfo.getKey(serviceNameWithGroup, clusters); // DEFAULT_GROUP@@MOCK_SERVER_NAME
+        serviceInfoUpdateService.scheduleUpdateIfAbsent(serviceName, groupName, clusters); // 开启定时任务向服务端定时拉去最新服务列表信息
+        ServiceInfo result = serviceInfoHolder.getServiceInfoMap().get(serviceKey); // 从本地缓存获取服务信息
+        if (null == result || !isSubscribed(serviceName, groupName, clusters)) {  // 本地无缓存或者
+            result = grpcClientProxy.subscribe(serviceName, groupName, clusters); // 向远程服务器发起订阅请求，远程发现服务列表变化，会以udp协议广播给所有的订阅者
         }
         serviceInfoHolder.processServiceInfo(result);
         return result;

@@ -125,7 +125,7 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
         this.setServerPort(DEFAULT_SERVER_PORT);
         this.namespaceId = namespaceId;
         this.beatReactor = new BeatReactor(this, properties);
-        this.pushReceiver = new PushReceiver(serviceInfoHolder);
+        this.pushReceiver = new PushReceiver(serviceInfoHolder); // udp协议，接收服务端推送的消息
         this.maxRetry = ConvertUtils.toInt(properties.getProperty(PropertyKeyConst.NAMING_REQUEST_DOMAIN_RETRY_COUNT,
                 String.valueOf(UtilAndComs.REQUEST_DOMAIN_RETRY_COUNT)));
     }
@@ -419,7 +419,7 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
         
         NacosException exception = new NacosException();
         
-        if (serverListManager.isDomain()) {
+        if (serverListManager.isDomain()) { // 服务端只有一个节点（主节点）
             String nacosDomain = serverListManager.getNacosDomain();
             for (int i = 0; i < maxRetry; i++) {
                 try {
@@ -472,20 +472,20 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
             String method) throws NacosException {
         long start = System.currentTimeMillis();
         long end = 0;
-        String namespace = params.get(CommonParams.NAMESPACE_ID);
-        String group = params.get(CommonParams.GROUP_NAME);
-        String serviceName = params.get(CommonParams.SERVICE_NAME);
-        params.putAll(getSecurityHeaders(namespace, group, serviceName));
-        Header header = NamingHttpUtil.builderHeader();
+        String namespace = params.get(CommonParams.NAMESPACE_ID); // public
+        String group = params.get(CommonParams.GROUP_NAME); // DEFAULT_GROUP
+        String serviceName = params.get(CommonParams.SERVICE_NAME); // jinhanI06Yv.76272.net
+        params.putAll(getSecurityHeaders(namespace, group, serviceName)); //  {app=unknown, groupName=DEFAULT_GROUP, metadata={"jinhanI06Yv.76272.net":"this is a register metadata"}, namespaceId=public, selector={"type":"label","expression":"CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B"}, serviceName=jinhanI06Yv.76272.net, protectThreshold=1.0}
+        Header header = NamingHttpUtil.builderHeader(); // Header{headerToMap={Accept-Charset=UTF-8, Accept-Encoding=gzip,deflate,sdch, Client-Version=2.1.2, Content-Type=application/json;charset=UTF-8, Request-Module=Naming, Requester=Keep-Alive, RequestId=a3006e70-4ddd-4421-a7db-bc95fb2b3ead, User-Agent=Nacos-Java-Client:v2.1.2}}
         
-        String url;
+        String url; // http://127.0.0.1:8848/nacos/v1/ns/service
         if (curServer.startsWith(HTTPS_PREFIX) || curServer.startsWith(HTTP_PREFIX)) {
             url = curServer + api;
         } else {
             if (!InternetAddressUtil.containsPort(curServer)) {
                 curServer = curServer + InternetAddressUtil.IP_PORT_SPLITER + serverPort;
             }
-            url = NamingHttpClientManager.getInstance().getPrefix() + curServer + api;
+            url = NamingHttpClientManager.getInstance().getPrefix() + curServer + api; // http://127.0.0.1:8848/nacos/v1/ns/service
         }
         try {
             HttpRestResult<String> restResult = nacosRestTemplate

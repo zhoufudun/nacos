@@ -165,9 +165,9 @@ public class NamingEventPublisher extends Thread implements ShardedEventPublishe
         }
     }
     
-    private void handleEvent(Event event) {
+    private void handleEvent(Event event) { // com.alibaba.nacos.naming.core.v2.event.metadata.MetadataEvent$ServiceMetadataEvent@65d41b3b
         Class<? extends Event> eventType = event.getClass();
-        Set<Subscriber<? extends Event>> subscribers = subscribes.get(eventType);
+        Set<Subscriber<? extends Event>> subscribers = subscribes.get(eventType); // com.alibaba.nacos.naming.core.v2.event.metadata.MetadataEvent$ServiceMetadataEvent
         if (null == subscribers) {
             if (Loggers.EVT_LOG.isDebugEnabled()) {
                 Loggers.EVT_LOG.debug("[NotifyCenter] No subscribers for slow event {}", eventType.getName());

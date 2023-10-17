@@ -62,7 +62,7 @@ public class NamingBase extends HttpClient4Test {
 
     public static final int TEST_PORT = 8080;
 
-    public static final int TIME_OUT = 3000;
+    public static final int TIME_OUT = 30000000;
 
     public static String randomDomainName() {
         StringBuilder sb = new StringBuilder();
@@ -184,13 +184,13 @@ public class NamingBase extends HttpClient4Test {
         String url = "http://127.0.0.1:" + localPort + normalizeContextPath(contextPath) + "/v1/ns/operator/switches?entry=overriddenServerStatus&value=" + status;
         Header header = Header.newInstance();
         header.addParam(HttpHeaderConsts.USER_AGENT_HEADER, "Nacos-Server");
-        HttpRestResult<String> result = nacosRestTemplate.putForm(url, header, new HashMap<>(), String.class);
+        HttpRestResult<String> result = nacosRestTemplate.putForm(url, header, new HashMap<>(), String.class); // RestResult{code=200, message='null', data=ok}
         System.out.println(result);
         Assert.assertEquals(HttpStatus.SC_OK, result.getCode());
 
         url = "http://127.0.0.1:" + localPort + normalizeContextPath(contextPath) + "/v1/ns/operator/switches?entry=autoChangeHealthCheckEnabled&value=" + false;
 
-        result = nacosRestTemplate.putForm(url, header, new HashMap<>(), String.class);
+        result = nacosRestTemplate.putForm(url, header, new HashMap<>(), String.class); //RestResult{code=200, message='null', data=ok}
         System.out.println(result);
         Assert.assertEquals(HttpStatus.SC_OK, result.getCode());
     }

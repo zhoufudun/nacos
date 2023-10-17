@@ -68,12 +68,13 @@ public class GrpcRequestAcceptor extends RequestGrpc.RequestImplBase {
         }
         
     }
-    
+
     @Override
-    public void request(Payload grpcRequest, StreamObserver<Payload> responseObserver) {
-        
+    public void request(Payload grpcRequest, StreamObserver<Payload> responseObserver) { // 连接建立后，这个地方用接收客户端的消息
+        // metadata {type: "ServerCheckRequest" clientIp: "10.2.40.18"}body {value: "{\"headers\":{},\"module\":\"internal\"}"}
+        // metadata {type: "SubscribeServiceRequest "headers {key: "app"value: "unknown"} clientIp: "10.2.40.18"} body {value: "{\"headers\":{},\"namespace\":\"public\",\"serviceName\":\"MOCK_SERVER_NAME\",\"groupName\":\"DEFAULT_GROUP\",\"subscribe\":true,\"clusters\":\"\",\"module\":\"naming\"}"}
         traceIfNecessary(grpcRequest, true);
-        String type = grpcRequest.getMetadata().getType();
+        String type = grpcRequest.getMetadata().getType(); // ServerCheckRequest
         
         //server is on starting.
         if (!ApplicationUtils.isStarted()) {
@@ -95,7 +96,7 @@ public class GrpcRequestAcceptor extends RequestGrpc.RequestImplBase {
             return;
         }
         
-        RequestHandler requestHandler = requestHandlerRegistry.getByRequestType(type);
+        RequestHandler requestHandler = requestHandlerRegistry.getByRequestType(type); // key=type(例如：SubscribeServiceRequest)  value=举例：com.alibaba.nacos.naming.remote.rpc.handler.SubscribeServiceRequestHandler@626df173
         //no handler found.
         if (requestHandler == null) {
             Loggers.REMOTE_DIGEST.warn(String.format("[%s] No handler for request type : %s :", "grpc", type));
@@ -165,7 +166,7 @@ public class GrpcRequestAcceptor extends RequestGrpc.RequestImplBase {
             requestMeta.setClientVersion(connection.getMetaInfo().getVersion());
             requestMeta.setLabels(connection.getMetaInfo().getLabels());
             connectionManager.refreshActiveTime(requestMeta.getConnectionId());
-            Response response = requestHandler.handleRequest(request, requestMeta);
+            Response response = requestHandler.handleRequest(request, requestMeta); // 真正处理客户端的请求
             Payload payloadResponse = GrpcUtils.convert(response);
             traceIfNecessary(payloadResponse, false);
             responseObserver.onNext(payloadResponse);

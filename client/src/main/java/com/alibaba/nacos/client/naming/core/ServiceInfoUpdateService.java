@@ -51,7 +51,7 @@ public class ServiceInfoUpdateService implements Closeable {
     
     private static final int DEFAULT_UPDATE_CACHE_TIME_MULTIPLE = 6;
     
-    private final Map<String, ScheduledFuture<?>> futureMap = new HashMap<>();
+    private final Map<String, ScheduledFuture<?>> futureMap = new HashMap<>(); // key=服务的唯一标识，value=定时任务表示的Future
     
     private final ServiceInfoHolder serviceInfoHolder;
     
@@ -99,7 +99,7 @@ public class ServiceInfoUpdateService implements Closeable {
         if (!asyncQuerySubscribeService) {
             return;
         }
-        String serviceKey = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), clusters);
+        String serviceKey = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), clusters); // DEFAULT_GROUP@@MOCK_SERVER_NAME
         if (futureMap.get(serviceKey) != null) {
             return;
         }
@@ -109,12 +109,12 @@ public class ServiceInfoUpdateService implements Closeable {
             }
             
             ScheduledFuture<?> future = addTask(new UpdateTask(serviceName, groupName, clusters));
-            futureMap.put(serviceKey, future);
+            futureMap.put(serviceKey, future); // 保存定时任务的ScheduledFuture
         }
     }
     
     private synchronized ScheduledFuture<?> addTask(UpdateTask task) {
-        return executor.schedule(task, DEFAULT_DELAY, TimeUnit.MILLISECONDS);
+        return executor.schedule(task, DEFAULT_DELAY, TimeUnit.MILLISECONDS); // 每个定时任务1s执行一次
     }
     
     /**
@@ -167,11 +167,11 @@ public class ServiceInfoUpdateService implements Closeable {
         private int failCount = 0;
         
         public UpdateTask(String serviceName, String groupName, String clusters) {
-            this.serviceName = serviceName;
-            this.groupName = groupName;
-            this.clusters = clusters;
-            this.groupedServiceName = NamingUtils.getGroupedName(serviceName, groupName);
-            this.serviceKey = ServiceInfo.getKey(groupedServiceName, clusters);
+            this.serviceName = serviceName; // MOCK_SERVER_NAME
+            this.groupName = groupName;//DEFAULT_GROUP
+            this.clusters = clusters;// ""
+            this.groupedServiceName = NamingUtils.getGroupedName(serviceName, groupName);// DEFAULT_GROUP@@MOCK_SERVER_NAME
+            this.serviceKey = ServiceInfo.getKey(groupedServiceName, clusters); // DEFAULT_GROUP@@MOCK_SERVER_NAME
         }
         
         @Override
@@ -188,19 +188,19 @@ public class ServiceInfoUpdateService implements Closeable {
                 
                 ServiceInfo serviceObj = serviceInfoHolder.getServiceInfoMap().get(serviceKey);
                 if (serviceObj == null) {
-                    serviceObj = namingClientProxy.queryInstancesOfService(serviceName, groupName, clusters, 0, false);
-                    serviceInfoHolder.processServiceInfo(serviceObj);
+                    serviceObj = namingClientProxy.queryInstancesOfService(serviceName, groupName, clusters, 0, false); // 本地查不到服务信息，向服务端发起查询特定服务的所有信息
+                    serviceInfoHolder.processServiceInfo(serviceObj); // 本地内存服务更新为最新，并且如有变动，通知给监听者
                     lastRefTime = serviceObj.getLastRefTime();
                     return;
                 }
                 
                 if (serviceObj.getLastRefTime() <= lastRefTime) {
-                    serviceObj = namingClientProxy.queryInstancesOfService(serviceName, groupName, clusters, 0, false);
+                    serviceObj = namingClientProxy.queryInstancesOfService(serviceName, groupName, clusters, 0, false); // 本地服务信息过期，向服务端发起查询特定服务的所有信息
                     serviceInfoHolder.processServiceInfo(serviceObj);
                 }
                 lastRefTime = serviceObj.getLastRefTime();
                 if (CollectionUtils.isEmpty(serviceObj.getHosts())) {
-                    incFailCount();
+                    incFailCount(); // 远程服务器返回服务列表为null, 退出结束任务
                     return;
                 }
                 // TODO multiple time can be configured.
@@ -213,7 +213,7 @@ public class ServiceInfoUpdateService implements Closeable {
             } finally {
                 if (!isCancel) {
                     executor.schedule(this, Math.min(delayTime << failCount, DEFAULT_DELAY * 60),
-                            TimeUnit.MILLISECONDS);
+                            TimeUnit.MILLISECONDS); // 再次提交任务
                 }
             }
         }

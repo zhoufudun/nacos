@@ -62,9 +62,9 @@ public class DefaultPublisher extends Thread implements EventPublisher {
     @Override
     public void init(Class<? extends Event> type, int bufferSize) {
         setDaemon(true);
-        setName("nacos.publisher-" + type.getName());
-        this.eventType = type;
-        this.queueMaxSize = bufferSize;
+        setName("nacos.publisher-" + type.getName());  // 线程名称：nacos.publisher-com.alibaba.nacos.client.naming.event.InstancesChangeEvent、  nacos.publisher-com.alibaba.nacos.common.notify.SlowEvent
+        this.eventType = type; // class com.alibaba.nacos.client.naming.event.InstancesChangeEvent
+        this.queueMaxSize = bufferSize; //16384
         this.queue = new ArrayBlockingQueue<>(bufferSize);
         start();
     }
@@ -102,21 +102,21 @@ public class DefaultPublisher extends Thread implements EventPublisher {
             int waitTimes = 60;
             // To ensure that messages are not lost, enable EventHandler when
             // waiting for the first Subscriber to register
-            for (; ; ) {
+            for (; ; ) {  // 没有订阅者或者关闭，直接退出循环，下一个for中处理
                 if (shutdown || hasSubscriber() || waitTimes <= 0) {
                     break;
                 }
                 ThreadUtils.sleep(1000L);
-                waitTimes--;
+                waitTimes--; // 最多60s退出
             }
             
             for (; ; ) {
                 if (shutdown) {
                     break;
                 }
-                final Event event = queue.take();
+                final Event event = queue.take(); // 当前线程不断循环，这里获取缓存队列中事件，发送给订阅者
                 receiveEvent(event);
-                UPDATER.compareAndSet(this, lastEventSequence, Math.max(lastEventSequence, event.sequence()));
+                UPDATER.compareAndSet(this, lastEventSequence, Math.max(lastEventSequence, event.sequence())); // 原子更新lastEventSequence为最近事件的序列号
             }
         } catch (Throwable ex) {
             LOGGER.error("Event listener exception : ", ex);
@@ -138,12 +138,12 @@ public class DefaultPublisher extends Thread implements EventPublisher {
     }
     
     @Override
-    public boolean publish(Event event) {
+    public boolean publish(Event event) {  // 需要推送的消息先加入队列，再由openEventHandler方法中的queue.take()获取发送给订阅者
         checkIsStart();
         boolean success = this.queue.offer(event);
         if (!success) {
             LOGGER.warn("Unable to plug in due to interruption, synchronize sending time, event : {}", event);
-            receiveEvent(event);
+            receiveEvent(event); // 如果队列满了，无法加入，这里直接用当前线程推送给订阅者
             return true;
         }
         return true;
@@ -202,11 +202,11 @@ public class DefaultPublisher extends Thread implements EventPublisher {
         
         LOGGER.debug("[NotifyCenter] the {} will received by {}", event, subscriber);
         
-        final Runnable job = () -> subscriber.onEvent(event);
+        final Runnable job = () -> subscriber.onEvent(event);  // 事件通知给订阅者
         final Executor executor = subscriber.executor();
         
         if (executor != null) {
-            executor.execute(job);
+            executor.execute(job); // 如果订阅者定制了回校线程池，则使用指定的线程池执行回调，否者使用当前线程池执行回调
         } else {
             try {
                 job.run();

@@ -43,7 +43,7 @@ public class InstancesChangeNotifier extends Subscriber<InstancesChangeEvent> {
     
     private final String eventScope;
     
-    private final Map<String, ConcurrentHashSet<EventListener>> listenerMap = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentHashSet<EventListener>> listenerMap = new ConcurrentHashMap<>(); // key=具体服务对应的key,例如：DEFAULT_GROUP@@ihuman-turl-service@@DEFAULT  value=监听者
     
     private final Object lock = new Object();
     
@@ -65,8 +65,8 @@ public class InstancesChangeNotifier extends Subscriber<InstancesChangeEvent> {
      * @param listener    custom listener
      */
     public void registerListener(String groupName, String serviceName, String clusters, EventListener listener) {
-        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), clusters);
-        ConcurrentHashSet<EventListener> eventListeners = listenerMap.get(key);
+        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), clusters); //key: DEFAULT_GROUP@@MOCK_SERVER_NAME
+        ConcurrentHashSet<EventListener> eventListeners = listenerMap.get(key); // key=DEFAULT_GROUP@@MOCK_SERVER_NAME, value=ConcurrentHashSet<EventListener>
         if (eventListeners == null) {
             synchronized (lock) {
                 eventListeners = listenerMap.get(key);

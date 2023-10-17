@@ -83,13 +83,13 @@ public class RequestHandlerRegistry implements ApplicationListener<ContextRefres
                     TpsControl tpsControl = method.getAnnotation(TpsControl.class);
                     String pointName = tpsControl.pointName();
                     TpsMonitorPoint tpsMonitorPoint = new TpsMonitorPoint(pointName);
-                    tpsMonitorManager.registerTpsControlPoint(tpsMonitorPoint);
+                    tpsMonitorManager.registerTpsControlPoint(tpsMonitorPoint); // 缓存带有TpsControl的监控点信息
                 }
             } catch (Exception e) {
                 //ignore.
             }
             Class tClass = (Class) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
-            registryHandlers.putIfAbsent(tClass.getSimpleName(), requestHandler);
+            registryHandlers.putIfAbsent(tClass.getSimpleName(), requestHandler); // 缓存所有的处理器:  key=type(例如：SubscribeServiceRequest)  value=RequestHandler的实现类
         }
     }
 }

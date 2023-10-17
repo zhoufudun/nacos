@@ -61,7 +61,7 @@ public class NotifyCenter {
     private static Class<? extends EventPublisher> clazz;
     
     /**
-     * Publisher management container.
+     * Publisher management container.  key类似于：com.alibaba.nacos.client.naming.event.InstancesChangeEvent  value=事件的发布者
      */
     private final Map<String, EventPublisher> publisherMap = new ConcurrentHashMap<>(16);
     
@@ -81,10 +81,10 @@ public class NotifyCenter {
         if (iterator.hasNext()) {
             clazz = iterator.next().getClass();
         } else {
-            clazz = DefaultPublisher.class;
+            clazz = DefaultPublisher.class; // 没有配置SPI实现，就是用DefaultPublisher
         }
         
-        DEFAULT_PUBLISHER_FACTORY = (cls, buffer) -> {
+        DEFAULT_PUBLISHER_FACTORY = (cls, buffer) -> { // cls: "class com.alibaba.nacos.client.naming.event.InstancesChangeEvent"  buffer； 16384
             try {
                 EventPublisher publisher = clazz.newInstance();
                 publisher.init(cls, buffer);
@@ -186,7 +186,7 @@ public class NotifyCenter {
             return;
         }
         
-        final Class<? extends Event> subscribeType = consumer.subscribeType();
+        final Class<? extends Event> subscribeType = consumer.subscribeType(); // class com.alibaba.nacos.client.naming.event.InstancesChangeEvent
         if (ClassUtils.isAssignableFrom(SlowEvent.class, subscribeType)) {
             INSTANCE.sharePublisher.addSubscriber(consumer, subscribeType);
             return;
@@ -205,12 +205,12 @@ public class NotifyCenter {
     private static void addSubscriber(final Subscriber consumer, Class<? extends Event> subscribeType,
             EventPublisherFactory factory) {
         
-        final String topic = ClassUtils.getCanonicalName(subscribeType);
+        final String topic = ClassUtils.getCanonicalName(subscribeType); // com.alibaba.nacos.client.naming.event.InstancesChangeEvent
         synchronized (NotifyCenter.class) {
             // MapUtils.computeIfAbsent is a unsafe method.
             MapUtil.computeIfAbsent(INSTANCE.publisherMap, topic, factory, subscribeType, ringBufferSize);
         }
-        EventPublisher publisher = INSTANCE.publisherMap.get(topic);
+        EventPublisher publisher = INSTANCE.publisherMap.get(topic); // Thread[nacos.publisher-com.alibaba.nacos.client.naming.event.InstancesChangeEvent,5,main]
         if (publisher instanceof ShardedEventPublisher) {
             ((ShardedEventPublisher) publisher).addSubscriber(consumer, subscribeType);
         } else {

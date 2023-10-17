@@ -61,16 +61,16 @@ public class SubscribeServiceRequestHandler extends RequestHandler<SubscribeServ
     
     @Override
     @Secured(action = ActionTypes.READ)
-    public SubscribeServiceResponse handle(SubscribeServiceRequest request, RequestMeta meta) throws NacosException {
-        String namespaceId = request.getNamespace();
-        String serviceName = request.getServiceName();
-        String groupName = request.getGroupName();
-        String app = request.getHeader("app", "unknown");
-        String groupedServiceName = NamingUtils.getGroupedName(serviceName, groupName);
+    public SubscribeServiceResponse handle(SubscribeServiceRequest request, RequestMeta meta) throws NacosException { // 服务端处理客户端的订阅请求
+        String namespaceId = request.getNamespace(); // public
+        String serviceName = request.getServiceName(); //
+        String groupName = request.getGroupName(); // DEFAULT_GROUP
+        String app = request.getHeader("app", "unknown"); // unknown
+        String groupedServiceName = NamingUtils.getGroupedName(serviceName, groupName); // DEFAULT_GROUP@@MOCK_SERVER_NAME
         Service service = Service.newService(namespaceId, groupName, serviceName, true);
         Subscriber subscriber = new Subscriber(meta.getClientIp(), meta.getClientVersion(), app, meta.getClientIp(),
                 namespaceId, groupedServiceName, 0, request.getClusters());
-        ServiceInfo serviceInfo = ServiceUtil.selectInstancesWithHealthyProtection(serviceStorage.getData(service),
+        ServiceInfo serviceInfo = ServiceUtil.selectInstancesWithHealthyProtection(serviceStorage.getData(service), // DEFAULT_GROUP@@MOCK_SERVER_NAME
                 metadataManager.getServiceMetadata(service).orElse(null), subscriber.getCluster(), false,
                 true, subscriber.getIp());
         if (request.isSubscribe()) {

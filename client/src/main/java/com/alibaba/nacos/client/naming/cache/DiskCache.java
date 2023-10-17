@@ -20,6 +20,7 @@ import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.client.naming.utils.CollectionUtils;
+import com.alibaba.nacos.client.utils.LogUtils;
 import com.alibaba.nacos.common.utils.JacksonUtils;
 import com.alibaba.nacos.common.utils.StringUtils;
 
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
+import static com.alibaba.nacos.client.utils.LogUtils.logger;
 
 /**
  * Disk cache.
@@ -170,6 +172,9 @@ public class DiskCache {
                 throw new IllegalStateException("failed to create cache dir: " + dir);
             }
         }
+
+        LogUtils.logger(DiskCache.class).info("client local cache serverList dir="+cacheDir);
+
         return cacheDir;
     }
 }

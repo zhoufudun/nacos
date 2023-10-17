@@ -119,7 +119,7 @@ public class ConcurrentDiskUtil {
     }
     
     /**
-     * write file content.
+     * write file content.   文件加锁保证并发安全
      *
      * @param file        file
      * @param content     content

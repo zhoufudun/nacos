@@ -206,7 +206,7 @@ public abstract class GrpcClient extends RpcClient {
     private StreamObserver<Payload> bindRequestStream(final BiRequestStreamGrpc.BiRequestStreamStub streamStub,
             final GrpcConnection grpcConn) {
         
-        return streamStub.requestBiStream(new StreamObserver<Payload>() {
+        return streamStub.requestBiStream(new StreamObserver<Payload>() {  // 接收服务端的消息并且处理
             
             @Override
             public void onNext(Payload payload) {
@@ -304,7 +304,7 @@ public abstract class GrpcClient extends RpcClient {
             RequestGrpc.RequestFutureStub newChannelStubTemp = createNewChannelStub(managedChannel);
             if (newChannelStubTemp != null) {
                 
-                Response response = serverCheck(serverInfo.getServerIp(), port, newChannelStubTemp);
+                Response response = serverCheck(serverInfo.getServerIp(), port, newChannelStubTemp); // 1、先向服务端发送 监看检查请求：ServerCheckRequest
                 if (response == null || !(response instanceof ServerCheckResponse)) {
                     shuntDownChannel(managedChannel);
                     return null;
@@ -323,7 +323,7 @@ public abstract class GrpcClient extends RpcClient {
                 grpcConn.setGrpcFutureServiceStub(newChannelStubTemp);
                 grpcConn.setChannel(managedChannel);
                 //send a  setup request.
-                ConnectionSetupRequest conSetupRequest = new ConnectionSetupRequest();
+                ConnectionSetupRequest conSetupRequest = new ConnectionSetupRequest();  // 2、在向服务端发送 监看连接请求：ConnectionSetupRequest
                 conSetupRequest.setClientVersion(VersionUtils.getFullClientVersion());
                 conSetupRequest.setLabels(super.getLabels());
                 conSetupRequest.setAbilities(super.clientAbilities);

@@ -242,7 +242,7 @@ public class NamingMetadataManager extends SmartSubscriber {
     }
     
     private void handleServiceMetadataEvent(MetadataEvent.ServiceMetadataEvent event) {
-        Service service = event.getService();
+        Service service = event.getService(); // Service{namespace='public', group='DEFAULT_GROUP', name='MOCK_SERVER_NAME', ephemeral=true, revision=2}
         if (containServiceMetadata(service)) {
             updateExpiredInfo(event.isExpired(), ExpiredMetadataInfo.newExpiredServiceMetadata(service));
         }

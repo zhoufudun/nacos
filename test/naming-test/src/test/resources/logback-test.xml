@@ -17,16 +17,37 @@
 
 <configuration>
     
-    <!--<appender name="DefaultAppender" class="ch.qos.logback.core.ConsoleAppender">-->
-        <!--<append>true</append>-->
-        <!--<encoder>-->
-            <!--<pattern>%d{yyy-MM-dd HH\:mm\:ss,GMT+8} %p %t - %m%n</pattern>-->
-            <!--<charset class="java.nio.charset.Charset">UTF-8</charset>-->
-        <!--</encoder>-->
-    <!--</appender>-->
+    <appender name="DefaultAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH\:mm\:ss,GMT+8} %p %t - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+    </appender>
 
-    <!--<root>-->
-        <!--<level value="OFF"/>-->
-        <!--<appender-ref ref="DefaultAppender"/>-->
-    <!--</root>-->
+<!--    <Loggers>-->
+<!--        <Logger name="com.alibaba.nacos.client" level="DEBUG"-->
+<!--                additivity="false">-->
+<!--            <AppenderRef ref="DefaultAppender"/>-->
+<!--        </Logger>-->
+
+<!--        <Logger name="com.alibaba.nacos.common.remote.client" level="DEBUG"-->
+<!--                additivity="false">-->
+<!--            <AppenderRef ref="DefaultAppender"/>-->
+<!--        </Logger>-->
+
+<!--        <Logger name="com.alibaba.nacos.client.config" level="DEBUG"-->
+<!--                additivity="false">-->
+<!--            <AppenderRef ref="DefaultAppender"/>-->
+<!--        </Logger>-->
+
+<!--        <Logger name="com.alibaba.nacos.client.naming"  level="DEBUG"-->
+<!--                        additivity="false">-->
+<!--                    <AppenderRef ref="DefaultAppender"/>-->
+<!--        </Logger>-->
+<!--    </Loggers>-->
+    <root>
+        <level value="DEBUG"/>
+        <appender-ref ref="DefaultAppender"/>
+    </root>
 </configuration>

@@ -59,13 +59,13 @@ public class FailoverReactor implements Closeable {
     
     private static final String FAILOVER_MODE_PARAM = "failover-mode";
     
-    private Map<String, ServiceInfo> serviceMap = new ConcurrentHashMap<>();
+    private Map<String, ServiceInfo> serviceMap = new ConcurrentHashMap<>(); // C:\Users\Administrator\nacos\naming\public/failover目录下排除故障转移文件，key=读取内容例如：key=DEFAULT_GROUP@@ihuman-turl-service@@DEFAULT  value=服务具体信息转化为：ServiceInfo
     
-    private final Map<String, String> switchParams = new ConcurrentHashMap<>();
+    private final Map<String, String> switchParams = new ConcurrentHashMap<>(); // 故障转移开关本地缓存
     
     private static final long DAY_PERIOD_MINUTES = 24 * 60;
     
-    private final String failoverDir;
+    private final String failoverDir; // C:\Users\Administrator\nacos\naming\public/failover
     
     private final ServiceInfoHolder serviceInfoHolder;
     
@@ -73,12 +73,12 @@ public class FailoverReactor implements Closeable {
     
     public FailoverReactor(ServiceInfoHolder serviceInfoHolder, String cacheDir) {
         this.serviceInfoHolder = serviceInfoHolder;
-        this.failoverDir = cacheDir + FAILOVER_DIR;
+        this.failoverDir = cacheDir + FAILOVER_DIR; // 故障转义本地目录：C:\Users\Administrator\nacos\naming\public/failover
         // init executorService
         this.executorService = new ScheduledThreadPoolExecutor(1, r -> {
             Thread thread = new Thread(r);
             thread.setDaemon(true);
-            thread.setName("com.alibaba.nacos.naming.failover");
+            thread.setName("com.alibaba.nacos.naming.failover");  // 故障转移线程名称：com.alibaba.nacos.naming.failover
             return thread;
         });
         this.init();
@@ -104,7 +104,7 @@ public class FailoverReactor implements Closeable {
 
                 File[] files = cacheDir.listFiles();
                 if (files == null || files.length <= 0) {
-                    new DiskFileWriter().run();
+                    new DiskFileWriter().run(); // 10s之后将缓存的服务信息写本地文件
                 }
             } catch (Throwable e) {
                 NAMING_LOGGER.error("[NA] failed to backup file on startup.", e);
@@ -135,14 +135,14 @@ public class FailoverReactor implements Closeable {
         NAMING_LOGGER.info("{} do shutdown stop", className);
     }
     
-    class SwitchRefresher implements Runnable {
+    class SwitchRefresher implements Runnable {  // 故障转移文件对应的刷新线程，5s执行一次
         
         long lastModifiedMillis = 0L;
         
         @Override
         public void run() {
             try {
-                File switchFile = new File(failoverDir + UtilAndComs.FAILOVER_SWITCH);
+                File switchFile = new File(failoverDir + UtilAndComs.FAILOVER_SWITCH); // 故障转移本地文件开关，文件名表示一个开关器, 文件名：C:\Users\Administrator\nacos\naming\public/failover/00-00---000-VIPSRV_FAILOVER_SWITCH-000---00-00
                 if (!switchFile.exists()) {
                     switchParams.put(FAILOVER_MODE_PARAM, Boolean.FALSE.toString());
                     NAMING_LOGGER.debug("failover switch is not found, {}", switchFile.getName());
@@ -160,10 +160,10 @@ public class FailoverReactor implements Closeable {
                         
                         for (String line : lines) {
                             String line1 = line.trim();
-                            if (IS_FAILOVER_MODE.equals(line1)) {
+                            if (IS_FAILOVER_MODE.equals(line1)) {   // 故障转移本地文件内容：1（表示开启故障转移）或者0（表示不开启故障转移）
                                 switchParams.put(FAILOVER_MODE_PARAM, Boolean.TRUE.toString());
                                 NAMING_LOGGER.info("failover-mode is on");
-                                new FailoverFileReader().run();
+                                new FailoverFileReader().run(); // 读取C:\Users\Administrator\nacos\naming\public/failover下所有文件，除了故障转移文件不读取。读取内容例如：key=DEFAULT_GROUP@@ihuman-turl-service@@DEFAULT  value=服务具体信息转化为：ServiceInfo
                             } else if (NO_FAILOVER_MODE.equals(line1)) {
                                 switchParams.put(FAILOVER_MODE_PARAM, Boolean.FALSE.toString());
                                 NAMING_LOGGER.info("failover-mode is off");
@@ -204,7 +204,7 @@ public class FailoverReactor implements Closeable {
                         continue;
                     }
                     
-                    if (file.getName().equals(UtilAndComs.FAILOVER_SWITCH)) {
+                    if (file.getName().equals(UtilAndComs.FAILOVER_SWITCH)) {  // 排除故障转移文件
                         continue;
                     }
                     
@@ -249,7 +249,7 @@ public class FailoverReactor implements Closeable {
         }
     }
     
-    class DiskFileWriter extends TimerTask {
+    class DiskFileWriter extends TimerTask {  // 1440min（一天）执行一次
         
         @Override
         public void run() {
@@ -264,7 +264,7 @@ public class FailoverReactor implements Closeable {
                     continue;
                 }
                 
-                DiskCache.write(serviceInfo, failoverDir);
+                DiskCache.write(serviceInfo, failoverDir); // 服务信息写入本地故障转移目录下，文件名例如：DEFAULT_GROUP%40%40ihuman-turl-service@@DEFAULT， 内容：{"name":"DEFAULT_GROUP@@ihuman-turl-service","clusters":"DEFAULT","cacheMillis":10000,"hosts":[{"instanceId":"10.2.40.18#8765#DEFAULT#DEFAULT_GROUP@@ihuman-turl-service","ip":"10.2.40.18","port":8765,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"clusterName":"DEFAULT","serviceName":"DEFAULT_GROUP@@ihuman-turl-service","metadata":{"management.endpoints.web.base-path":"/insight","preserved.register.source":"SPRING_CLOUD","version":"1.0.0","management.context-path":"/insight"},"lastBeat":1696833589420,"marked":false,"app":"DEFAULT","instanceHeartBeatInterval":5000,"instanceHeartBeatTimeOut":15000,"ipDeleteTimeout":30000},{"instanceId":"10.22.79.184#8765#DEFAULT#DEFAULT_GROUP@@ihuman-turl-service","ip":"10.22.79.184","port":8765,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"clusterName":"DEFAULT","serviceName":"DEFAULT_GROUP@@ihuman-turl-service","metadata":{"management.endpoints.web.base-path":"/insight","preserved.register.source":"SPRING_CLOUD","version":"1.0.0","management.context-path":"/insight"},"lastBeat":1696833591159,"marked":false,"app":"DEFAULT","instanceHeartBeatInterval":5000,"instanceHeartBeatTimeOut":15000,"ipDeleteTimeout":30000}],"lastRefTime":1696833591968,"checksum":"3ef49619c0028482bb898d8114bc1a7f","allIPs":false,"reachProtectionThreshold":false,"valid":true}
             }
         }
     }

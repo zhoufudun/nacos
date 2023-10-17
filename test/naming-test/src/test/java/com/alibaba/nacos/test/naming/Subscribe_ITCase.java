@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,16 +50,17 @@ import java.util.concurrent.TimeUnit;
  * @author wangtong.wt
  * @date 2018/6/20
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
-        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
+//        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class Subscribe_ITCase extends NamingBase {
 
     private NamingService naming;
-    @LocalServerPort
-    private int port;
+//    @LocalServerPort
+    private int port=8848;
 
     @Before
+//    @Ignore
     public void init() throws Exception {
         instances.clear();
         if (naming == null) {
@@ -81,7 +83,7 @@ public class Subscribe_ITCase extends NamingBase {
      */
     @Test(timeout = 4 * TIME_OUT)
     public void subscribeAdd() throws Exception {
-        String serviceName = randomDomainName();
+        String serviceName = "MOCK_SERVER_NAME";
 
         naming.subscribe(serviceName, new EventListener() {
             @Override
@@ -89,6 +91,7 @@ public class Subscribe_ITCase extends NamingBase {
                 System.out.println(((NamingEvent) event).getServiceName());
                 System.out.println(((NamingEvent) event).getInstances());
                 instances = ((NamingEvent) event).getInstances();
+                System.out.println(instances);
             }
         });
 
@@ -98,7 +101,7 @@ public class Subscribe_ITCase extends NamingBase {
             Thread.sleep(1000L);
         }
 
-        Assert.assertTrue(verifyInstanceList(instances, naming.getAllInstances(serviceName)));
+        Assert.assertTrue(verifyInstanceList(instances, naming.getAllInstances(serviceName))); // 发起
     }
 
     /**

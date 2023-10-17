@@ -46,6 +46,11 @@ import static com.alibaba.nacos.core.remote.grpc.BaseGrpcServer.CONTEXT_KEY_CONN
 /**
  * grpc bi stream request .
  *
+ *
+ * GrpcBiStreamRequestAcceptor则是前面提到的双向流的消息处理器。Client与Server首先会通过双向流的Service建立连接，只有建立了连接的客户端才可以发起一元单向请求。
+ * 客户端实际上只会通过这个双向流发送连接建立的请求，而后这个流都用来服务端推送消息。其余的请求都是通过另一个一元单向请求来完成的。
+ * 在注册连接时，GrpcConnection中还注入了当前连接的responseObserver，这样服务端就可以通过ConnectionManager获取到连接然后主动进行数据的推送
+ *
  * @author liuzunfei
  * @version $Id: GrpcBiStreamRequest.java, v 0.1 2020年09月01日 10:41 PM liuzunfei Exp $
  */
@@ -94,7 +99,7 @@ public class GrpcBiStreamRequestAcceptor extends BiRequestStreamGrpc.BiRequestSt
                 
                 Object parseObj;
                 try {
-                    parseObj = GrpcUtils.parse(payload);
+                    parseObj = GrpcUtils.parse(payload); // metadata { type: "ConnectionSetupRequest" clientIp: "10.2.40.18"} body {value: "{\"headers\":{},\"clientVersion\":\"Nacos-Java-Client:v2.1.2\",\"labels\":{\"module\":\"naming\",\"source\":\"sdk\"},\"module\":\"internal\"}"}
                 } catch (Throwable throwable) {
                     Loggers.REMOTE_DIGEST
                             .warn("[{}]Grpc request bi stream,payload parse error={}", connectionId, throwable);
@@ -107,7 +112,7 @@ public class GrpcBiStreamRequestAcceptor extends BiRequestStreamGrpc.BiRequestSt
                                     payload.getBody().getValue().toStringUtf8(), payload.getMetadata());
                     return;
                 }
-                if (parseObj instanceof ConnectionSetupRequest) {
+                if (parseObj instanceof ConnectionSetupRequest) {  // 客户端和服务端发起建立连接
                     ConnectionSetupRequest setUpRequest = (ConnectionSetupRequest) parseObj;
                     Map<String, String> labels = setUpRequest.getLabels();
                     String appName = "-";

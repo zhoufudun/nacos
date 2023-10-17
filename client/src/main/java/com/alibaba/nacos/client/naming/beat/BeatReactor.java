@@ -64,7 +64,7 @@ public class BeatReactor implements Closeable {
     
     public BeatReactor(NamingHttpClientProxy serverProxy, Properties properties) {
         this.serverProxy = serverProxy;
-        int threadCount = initClientBeatThreadCount(properties);
+        int threadCount = initClientBeatThreadCount(properties); // 客户端心跳线程池的核心线程数
         this.executorService = new ScheduledThreadPoolExecutor(threadCount, r -> {
             Thread thread = new Thread(r);
             thread.setDaemon(true);

@@ -69,7 +69,7 @@ public class PushReceiver implements Runnable, Closeable {
             this.serviceInfoHolder = serviceInfoHolder;
             String udpPort = getPushReceiverUdpPort();
             if (StringUtils.isEmpty(udpPort)) {
-                this.udpSocket = new DatagramSocket();
+                this.udpSocket = new DatagramSocket(); // udp 协议，接收服务端推送的消息？？
             } else {
                 this.udpSocket = new DatagramSocket(new InetSocketAddress(Integer.parseInt(udpPort)));
             }
@@ -109,12 +109,12 @@ public class PushReceiver implements Runnable, Closeable {
                     ack = "{\"type\": \"push-ack\"" + ", \"lastRefTime\":\"" + pushPacket.lastRefTime + "\", \"data\":"
                             + "\"\"}";
                 } else if (PUSH_PACKAGE_TYPE_DUMP.equals(pushPacket.type)) {
-                    // dump data to server
+                    // dump data to server, 向服务端回复客户端的数据
                     ack = "{\"type\": \"dump-ack\"" + ", \"lastRefTime\": \"" + pushPacket.lastRefTime + "\", \"data\":"
                             + "\"" + StringUtils.escapeJavaScript(JacksonUtils.toJson(serviceInfoHolder.getServiceInfoMap()))
                             + "\"}";
                 } else {
-                    // do nothing send ack only
+                    // do nothing send ack only, 不做任何事情，之回复ack
                     ack = "{\"type\": \"unknown-ack\"" + ", \"lastRefTime\":\"" + pushPacket.lastRefTime
                             + "\", \"data\":" + "\"\"}";
                 }
