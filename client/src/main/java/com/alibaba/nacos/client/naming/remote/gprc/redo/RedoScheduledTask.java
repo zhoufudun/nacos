@@ -48,8 +48,8 @@ public class RedoScheduledTask extends AbstractExecuteTask {
             return;
         }
         try {
-            redoForInstances();
-            redoForSubscribes();
+            redoForInstances(); // 实例重新注册
+            redoForSubscribes(); // 重新订阅
         } catch (Exception e) {
             LogUtils.NAMING_LOGGER.warn("Redo task run with unexpected exception: ", e);
         }
@@ -67,16 +67,16 @@ public class RedoScheduledTask extends AbstractExecuteTask {
     }
     
     private void redoForInstance(InstanceRedoData redoData) throws NacosException {
-        RedoData.RedoType redoType = redoData.getRedoType();
-        String serviceName = redoData.getServiceName();
-        String groupName = redoData.getGroupName();
+        RedoData.RedoType redoType = redoData.getRedoType(); // 重试类型：REGISTER
+        String serviceName = redoData.getServiceName(); // service
+        String groupName = redoData.getGroupName(); // group
         LogUtils.NAMING_LOGGER.info("Redo instance operation {} for {}@@{}", redoType, groupName, serviceName);
         switch (redoType) {
             case REGISTER:
                 if (isClientDisabled()) {
                     return;
                 }
-                processRegisterRedoType(redoData, serviceName, groupName);
+                processRegisterRedoType(redoData, serviceName, groupName); // 重新注册
                 break;
             case UNREGISTER:
                 if (isClientDisabled()) {
@@ -96,10 +96,10 @@ public class RedoScheduledTask extends AbstractExecuteTask {
         if (redoData instanceof BatchInstanceRedoData) {
             // Execute Batch Register
             BatchInstanceRedoData batchInstanceRedoData = (BatchInstanceRedoData) redoData;
-            clientProxy.doBatchRegisterService(serviceName, groupName, batchInstanceRedoData.getInstances());
+            clientProxy.doBatchRegisterService(serviceName, groupName, batchInstanceRedoData.getInstances()); // 批量注册
             return;
         }
-        clientProxy.doRegisterService(serviceName, groupName, redoData.get());
+        clientProxy.doRegisterService(serviceName, groupName, redoData.get()); // 当个注册
     }
     
     private void redoForSubscribes() {
@@ -114,10 +114,10 @@ public class RedoScheduledTask extends AbstractExecuteTask {
     }
     
     private void redoForSubscribe(SubscriberRedoData redoData) throws NacosException {
-        RedoData.RedoType redoType = redoData.getRedoType();
-        String serviceName = redoData.getServiceName();
-        String groupName = redoData.getGroupName();
-        String cluster = redoData.get();
+        RedoData.RedoType redoType = redoData.getRedoType(); // REGISTER
+        String serviceName = redoData.getServiceName(); // service
+        String groupName = redoData.getGroupName(); // group
+        String cluster = redoData.get(); // cluster
         LogUtils.NAMING_LOGGER.info("Redo subscriber operation {} for {}@@{}#{}", redoType, groupName, serviceName, cluster);
         switch (redoData.getRedoType()) {
             case REGISTER:

@@ -17,11 +17,13 @@
 package com.alibaba.nacos.client.auth.impl;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.common.http.HttpClientBeanHolder;
 import com.alibaba.nacos.common.http.HttpRestResult;
 import com.alibaba.nacos.common.http.client.NacosRestTemplate;
 import com.alibaba.nacos.common.http.param.Header;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * read
+ */
 public class NacosClientAuthServiceImplTest {
     
     @Test
@@ -161,6 +166,26 @@ public class NacosClientAuthServiceImplTest {
         Assert.assertTrue(nacosClientAuthService.login(properties));
         //then
         Assert.assertEquals("abc", nacosClientAuthService.getLoginIdentityContext(null).getParameter(NacosAuthLoginConstant.ACCESSTOKEN));
+    }
+
+    @Test
+    public void testLogin() throws Exception {
+        NacosRestTemplate nacosRestTemplate = HttpClientBeanHolder
+                .getNacosRestTemplate(LoggerFactory.getLogger(NacosClientAuthServiceImplTest.class));
+
+        Properties properties = new Properties();
+        properties.setProperty(PropertyKeyConst.USERNAME, "nacos");
+        properties.setProperty(PropertyKeyConst.PASSWORD, "nacos");
+        List<String> serverList = new ArrayList<>();
+        serverList.add("127.0.0.1:8848");
+
+        NacosClientAuthServiceImpl nacosClientAuthService = new NacosClientAuthServiceImpl();
+        nacosClientAuthService.setServerList(serverList);
+        nacosClientAuthService.setNacosRestTemplate(nacosRestTemplate);
+        //when
+        boolean ret = nacosClientAuthService.login(properties);
+        //then
+        Assert.assertTrue(ret);
     }
     
 }

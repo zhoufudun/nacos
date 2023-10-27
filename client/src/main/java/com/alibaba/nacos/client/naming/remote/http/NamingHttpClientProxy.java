@@ -421,7 +421,7 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
         
         if (serverListManager.isDomain()) { // 服务端只有一个节点（主节点）
             String nacosDomain = serverListManager.getNacosDomain();
-            for (int i = 0; i < maxRetry; i++) {
+            for (int i = 0; i < maxRetry; i++) { // 最大重试三次
                 try {
                     return callServer(api, params, body, nacosDomain, method);
                 } catch (NacosException e) {
@@ -431,7 +431,7 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
                     }
                 }
             }
-        } else {
+        } else {  // 服务端有多个节点，随机一个节点发送请求
             Random random = new Random(System.currentTimeMillis());
             int index = random.nextInt(servers.size());
             

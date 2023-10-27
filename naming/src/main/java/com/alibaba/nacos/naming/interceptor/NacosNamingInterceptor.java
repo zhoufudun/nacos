@@ -17,7 +17,7 @@
 package com.alibaba.nacos.naming.interceptor;
 
 /**
- * Nacos naming interceptor.
+ * Nacos naming interceptor.  命名服务拦截器
  *
  * @author xiweng.yy
  */

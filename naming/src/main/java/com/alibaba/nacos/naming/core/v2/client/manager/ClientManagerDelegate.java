@@ -41,9 +41,9 @@ public class ClientManagerDelegate implements ClientManager {
     
     private final ConnectionBasedClientManager connectionBasedClientManager;
     
-    private final EphemeralIpPortClientManager ephemeralIpPortClientManager;
+    private final EphemeralIpPortClientManager ephemeralIpPortClientManager; // 管理的客户端是零时节点
     
-    private final PersistentIpPortClientManager persistentIpPortClientManager;
+    private final PersistentIpPortClientManager persistentIpPortClientManager; // 管理的客户端是永久节点
     
     public ClientManagerDelegate(ConnectionBasedClientManager connectionBasedClientManager,
             EphemeralIpPortClientManager ephemeralIpPortClientManager,
@@ -104,13 +104,13 @@ public class ClientManagerDelegate implements ClientManager {
     }
     
     private ClientManager getClientManagerById(String clientId) {
-        if (isConnectionBasedClient(clientId)) {
+        if (isConnectionBasedClient(clientId)) { // 包含#的不是基础连接类型
             return connectionBasedClientManager;
         }
         return clientId.endsWith(ClientConstants.PERSISTENT_SUFFIX) ? persistentIpPortClientManager : ephemeralIpPortClientManager;
     }
     
     private boolean isConnectionBasedClient(String clientId) {
-        return !clientId.contains(IpPortBasedClient.ID_DELIMITER);
+        return !clientId.contains(IpPortBasedClient.ID_DELIMITER); //1.1.1.1:800#true
     }
 }

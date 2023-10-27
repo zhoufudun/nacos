@@ -54,11 +54,11 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
      */
     private static final long DEFAULT_REDO_DELAY = 3000L;
     
-    private final ConcurrentMap<String, InstanceRedoData> registeredInstances = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, InstanceRedoData> registeredInstances = new ConcurrentHashMap<>(); // 缓存已注册实例以进行重做
     
-    private final ConcurrentMap<String, SubscriberRedoData> subscribes = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, SubscriberRedoData> subscribes = new ConcurrentHashMap<>(); // 缓存订阅服务器以进行重做
     
-    private final ScheduledExecutorService redoExecutor;
+    private final ScheduledExecutorService redoExecutor; // 重试任务线程池
     
     private volatile boolean connected = false;
     
@@ -83,10 +83,10 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
         connected = false;
         LogUtils.NAMING_LOGGER.warn("Grpc connection disconnect, mark to redo");
         synchronized (registeredInstances) {
-            registeredInstances.values().forEach(instanceRedoData -> instanceRedoData.setRegistered(false));
+            registeredInstances.values().forEach(instanceRedoData -> instanceRedoData.setRegistered(false)); // 客户端之前已经向服务器发起注册的实例标记全部标记为未注册
         }
         synchronized (subscribes) {
-            subscribes.values().forEach(subscriberRedoData -> subscriberRedoData.setRegistered(false));
+            subscribes.values().forEach(subscriberRedoData -> subscriberRedoData.setRegistered(false)); // 客户端之前已经向服务器发起订阅的全部标记为订阅
         }
         LogUtils.NAMING_LOGGER.warn("mark to redo completed");
     }
@@ -99,7 +99,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
      * @param instance    registered instance
      */
     public void cacheInstanceForRedo(String serviceName, String groupName, Instance instance) {
-        String key = NamingUtils.getGroupedName(serviceName, groupName);
+        String key = NamingUtils.getGroupedName(serviceName, groupName); // group@@service
         InstanceRedoData redoData = InstanceRedoData.build(serviceName, groupName, instance);
         synchronized (registeredInstances) {
             registeredInstances.put(key, redoData);
@@ -123,7 +123,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
     
     /**
      * Instance register successfully, mark registered status as {@code true}.
-     *
+     * 实例注册成功，将注册状态标记为
      * @param serviceName service name
      * @param groupName   group name
      */
@@ -132,7 +132,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
         synchronized (registeredInstances) {
             InstanceRedoData redoData = registeredInstances.get(key);
             if (null != redoData) {
-                redoData.setRegistered(true);
+                redoData.setRegistered(true); // 标记重新注册的实例注册成功
             }
         }
     }
@@ -167,7 +167,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
     
     /**
      * Find all instance redo data which need do redo.
-     *
+     * 查找所有需要重做的实例重做数据
      * @return set of {@code InstanceRedoData} need to do redo.
      */
     public Set<InstanceRedoData> findInstanceRedoData() {
@@ -199,7 +199,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
     
     /**
      * Subscriber register successfully, mark registered status as {@code true}.
-     *
+     * 订阅服务器注册成功，将注册状态标记为true
      * @param serviceName service name
      * @param groupName   group name
      * @param cluster     cluster
@@ -209,7 +209,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
         synchronized (subscribes) {
             SubscriberRedoData redoData = subscribes.get(key);
             if (null != redoData) {
-                redoData.setRegistered(true);
+                redoData.setRegistered(true); // 标记订阅者为已经注册状态
             }
         }
     }
@@ -262,7 +262,7 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
     
     /**
      * Find all subscriber redo data which need do redo.
-     *
+     * 查找所有需要重做的订阅者重做数据
      * @return set of {@code SubscriberRedoData} need to do redo.
      */
     public Set<SubscriberRedoData> findSubscriberRedoData() {

@@ -55,21 +55,23 @@ public class HealthCheckReactor {
      */
     public static void scheduleCheck(HealthCheckTaskV2 task) {
         task.setStartTime(System.currentTimeMillis());
-        Runnable wrapperTask = new HealthCheckTaskInterceptWrapper(task);
+        Runnable wrapperTask = new HealthCheckTaskInterceptWrapper(task); // 带有拦截器的监看检查任务
         GlobalExecutor.scheduleNamingHealth(wrapperTask, task.getCheckRtNormalized(), TimeUnit.MILLISECONDS);
     }
     
     /**
      * Schedule client beat check task with a delay.
      *
+     *
+     *
      * @param task client beat check task
      */
-    public static void scheduleCheck(BeatCheckTask task) {
+    public static void scheduleCheck(BeatCheckTask task) { // com.alibaba.nacos.naming.healthcheck.heartbeat.ClientBeatCheckTaskV2@16fdefe9
         Runnable wrapperTask =
                 task instanceof NacosHealthCheckTask ? new HealthCheckTaskInterceptWrapper((NacosHealthCheckTask) task)
                         : task;
         futureMap.computeIfAbsent(task.taskKey(),
-                k -> GlobalExecutor.scheduleNamingHealth(wrapperTask, 5000, 5000, TimeUnit.MILLISECONDS));
+                k -> GlobalExecutor.scheduleNamingHealth(wrapperTask, 5000, 5000, TimeUnit.MILLISECONDS)); // 服务端每5秒向客户端发起健康检测
     }
     
     /**

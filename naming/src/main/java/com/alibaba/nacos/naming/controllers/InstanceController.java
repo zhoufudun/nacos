@@ -83,10 +83,10 @@ public class InstanceController {
     private SwitchDomain switchDomain;
     
     @Autowired
-    private InstanceOperatorClientImpl instanceServiceV2;
+    private InstanceOperatorClientImpl instanceServiceV2; // instanceServiceV2 Only when all cluster upgrade upper 2.0.0, then user is
     
     @Autowired
-    private InstanceOperatorServiceImpl instanceServiceV1;
+    private InstanceOperatorServiceImpl instanceServiceV1; // instanceServiceV1 Only when all cluster Less than 2.0.0, then user is
     
     @Autowired
     private UpgradeJudgement upgradeJudgement;
@@ -304,7 +304,7 @@ public class InstanceController {
     }
     
     /**
-     * Get all instance of input service.
+     * Get all instance of input service.  获取指定服务名字的实例列表
      *
      * @param request http request
      * @return list of instance
@@ -318,15 +318,15 @@ public class InstanceController {
         String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
         NamingUtils.checkServiceNameFormat(serviceName);
         
-        String agent = WebUtils.getUserAgent(request);
-        String clusters = WebUtils.optional(request, "clusters", StringUtils.EMPTY);
-        String clientIP = WebUtils.optional(request, "clientIP", StringUtils.EMPTY);
-        int udpPort = Integer.parseInt(WebUtils.optional(request, "udpPort", "0"));
+        String agent = WebUtils.getUserAgent(request); // 客户端代理（服务端主动推送数据要用到） ： Nacos-Java-Client:v1.4.0
+        String clusters = WebUtils.optional(request, "clusters", StringUtils.EMPTY); //
+        String clientIP = WebUtils.optional(request, "clientIP", StringUtils.EMPTY); // 客户端IP 10.2.40.18
+        int udpPort = Integer.parseInt(WebUtils.optional(request, "udpPort", "0")); // 客户端的UDP端口：50978
         boolean healthyOnly = Boolean.parseBoolean(WebUtils.optional(request, "healthyOnly", "false"));
         String app = WebUtils.optional(request, "app", StringUtils.EMPTY);
 
         Subscriber subscriber = new Subscriber(clientIP + ":" + udpPort, agent, app, clientIP, namespaceId, serviceName,
-                udpPort, clusters);
+                udpPort, clusters); // 通过客户端的信息，构造一个订阅者信息
         return getInstanceOperator().listInstance(namespaceId, serviceName, subscriber, clusters, healthyOnly);
     }
     
@@ -375,17 +375,17 @@ public class InstanceController {
     public ObjectNode beat(HttpServletRequest request) throws Exception {
         
         ObjectNode result = JacksonUtils.createEmptyJsonNode();
-        result.put(SwitchEntry.CLIENT_BEAT_INTERVAL, switchDomain.getClientBeatInterval());
+        result.put(SwitchEntry.CLIENT_BEAT_INTERVAL, switchDomain.getClientBeatInterval()); // ??
         
-        String beat = WebUtils.optional(request, "beat", StringUtils.EMPTY);
+        String beat = WebUtils.optional(request, "beat", StringUtils.EMPTY); // 获取心跳信息
         RsInfo clientBeat = null;
         if (StringUtils.isNotBlank(beat)) {
-            clientBeat = JacksonUtils.toObj(beat, RsInfo.class);
+            clientBeat = JacksonUtils.toObj(beat, RsInfo.class); // 心跳信息转为指标对象信息
         }
         String clusterName = WebUtils
-                .optional(request, CommonParams.CLUSTER_NAME, UtilsAndCommons.DEFAULT_CLUSTER_NAME);
-        String ip = WebUtils.optional(request, "ip", StringUtils.EMPTY);
-        int port = Integer.parseInt(WebUtils.optional(request, "port", "0"));
+                .optional(request, CommonParams.CLUSTER_NAME, UtilsAndCommons.DEFAULT_CLUSTER_NAME); // 获取集群信息
+        String ip = WebUtils.optional(request, "ip", StringUtils.EMPTY); // 获取ip信息
+        int port = Integer.parseInt(WebUtils.optional(request, "port", "0")); // 获取port信息
         if (clientBeat != null) {
             if (StringUtils.isNotBlank(clientBeat.getCluster())) {
                 clusterName = clientBeat.getCluster();
@@ -396,8 +396,8 @@ public class InstanceController {
             ip = clientBeat.getIp();
             port = clientBeat.getPort();
         }
-        String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
-        String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
+        String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID); // 获取namespaceId信息
+        String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME); // 获取serviceName信息: DEFAULT_GROUP@@nacos.test.1
         NamingUtils.checkServiceNameFormat(serviceName);
         Loggers.SRV_LOG.debug("[CLIENT-BEAT] full arguments: beat: {}, serviceName: {}, namespaceId: {}", clientBeat,
                 serviceName, namespaceId);

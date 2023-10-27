@@ -34,6 +34,8 @@ import java.util.Set;
 /**
  * Scan all appropriate Class object through the package name.
  *
+ * 扫描指定的包下的所有的类
+ *
  * @author hujun
  */
 public class DefaultPackageScan implements PackageScan {

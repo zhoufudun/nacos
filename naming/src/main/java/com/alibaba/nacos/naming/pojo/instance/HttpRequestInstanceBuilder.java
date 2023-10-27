@@ -89,7 +89,7 @@ public class HttpRequestInstanceBuilder {
         return this;
     }
     
-    private void setAttributesToBuilder(HttpServletRequest request) throws NacosException {
+    private void setAttributesToBuilder(HttpServletRequest request) throws NacosException {  // 解析属性
         actualBuilder.setServiceName(WebUtils.required(request, CommonParams.SERVICE_NAME));
         actualBuilder.setIp(WebUtils.required(request, "ip"));
         actualBuilder.setPort(Integer.parseInt(WebUtils.required(request, "port")));
@@ -98,7 +98,7 @@ public class HttpRequestInstanceBuilder {
                 .toBoolean(WebUtils.optional(request, "ephemeral", String.valueOf(defaultInstanceEphemeral))));
         setWeight(request);
         setCluster(request);
-        setEnabled(request);
+        setEnabled(request); // 表示这个客户端是否可以接收请求，true=不可以接受请求
         setMetadata(request);
     }
     

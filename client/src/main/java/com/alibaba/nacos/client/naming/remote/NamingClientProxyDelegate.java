@@ -57,9 +57,9 @@ public class NamingClientProxyDelegate implements NamingClientProxy {
     
     private final ServiceInfoHolder serviceInfoHolder;
     
-    private final NamingHttpClientProxy httpClientProxy;
+    private final NamingHttpClientProxy httpClientProxy; // isEphemeral=false
     
-    private final NamingGrpcClientProxy grpcClientProxy;
+    private final NamingGrpcClientProxy grpcClientProxy; // isEphemeral=true
     
     private final SecurityProxy securityProxy;
     

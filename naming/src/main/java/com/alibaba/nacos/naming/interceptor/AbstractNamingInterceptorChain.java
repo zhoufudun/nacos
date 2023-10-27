@@ -30,11 +30,11 @@ import java.util.List;
 public abstract class AbstractNamingInterceptorChain<T extends Interceptable>
         implements NacosNamingInterceptorChain<T> {
     
-    private final List<NacosNamingInterceptor<T>> interceptors;
+    private final List<NacosNamingInterceptor<T>> interceptors; // [ServiceEnableBeatCheckInterceptor, InstanceEnableBeatCheckInterceptor, InstanceBeatCheckResponsibleInterceptor]
     
     protected AbstractNamingInterceptorChain(Class<? extends NacosNamingInterceptor<T>> clazz) {
         this.interceptors = new LinkedList<>();
-        interceptors.addAll(NacosServiceLoader.load(clazz));
+        interceptors.addAll(NacosServiceLoader.load(clazz)); // SPI 加载：AbstractHealthCheckInterceptor.class实现类
         interceptors.sort(Comparator.comparingInt(NacosNamingInterceptor::order));
     }
     

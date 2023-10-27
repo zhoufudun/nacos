@@ -24,7 +24,7 @@ import com.alibaba.nacos.sys.utils.ApplicationUtils;
 import java.util.Optional;
 
 /**
- * Service enable beat check interceptor.
+ * Service enable beat check interceptor.  判断客户端实例是否支持健康检查
  *
  * @author xiweng.yy
  */
@@ -37,7 +37,7 @@ public class ServiceEnableBeatCheckInterceptor extends AbstractBeatCheckIntercep
         if (metadata.isPresent() && metadata.get().getExtendData().containsKey(UtilsAndCommons.ENABLE_CLIENT_BEAT)) {
             return Boolean.parseBoolean(metadata.get().getExtendData().get(UtilsAndCommons.ENABLE_CLIENT_BEAT));
         }
-        return false;
+        return false; // 默认不支持健康心跳检查
     }
     
     @Override

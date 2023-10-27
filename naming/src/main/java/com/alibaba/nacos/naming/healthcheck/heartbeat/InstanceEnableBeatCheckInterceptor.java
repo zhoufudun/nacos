@@ -43,7 +43,7 @@ public class InstanceEnableBeatCheckInterceptor extends AbstractBeatCheckInterce
         if (instance.getExtendDatum().containsKey(UtilsAndCommons.ENABLE_CLIENT_BEAT)) {
             return ConvertUtils.toBoolean(instance.getExtendDatum().get(UtilsAndCommons.ENABLE_CLIENT_BEAT).toString());
         }
-        return false;
+        return false; // 默认不支持
     }
     
     @Override

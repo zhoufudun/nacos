@@ -38,7 +38,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class PushReceiverTest {
-    
+    /**
+     * read
+     */
     @Test
     public void testTestRunDomAndService() throws InterruptedException, IOException {
         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);

@@ -33,10 +33,10 @@ public class PathRequestCondition {
         this.pathExpression = parseExpressions(pathExpression);
     }
     
-    private PathExpression parseExpressions(String pathExpression) {
+    private PathExpression parseExpressions(String pathExpression) { // PUT-->/v1/core/ops/log
         String[] split = pathExpression.split(REQUEST_PATH_SEPARATOR);
-        String method = split[0];
-        String path = split[1];
+        String method = split[0]; // PUT
+        String path = split[1]; // /v1/core/ops/log
         return new PathExpression(method, path);
     }
     
@@ -47,9 +47,9 @@ public class PathRequestCondition {
     
     static class PathExpression {
         
-        private final String method;
+        private final String method; // PUT
         
-        private final String path;
+        private final String path; // /v1/core/ops/log
         
         PathExpression(String method, String path) {
             this.method = method;

@@ -30,8 +30,8 @@ import java.util.List;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
-@Ignore
-@FixMethodOrder(value = MethodSorters.NAME_ASCENDING)
+//@Ignore
+//@FixMethodOrder(value = MethodSorters.NAME_ASCENDING)
 public class NamingRaft_DITCase extends BaseClusterTest {
 
 	@Test

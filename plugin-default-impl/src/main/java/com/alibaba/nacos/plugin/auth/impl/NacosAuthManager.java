@@ -52,7 +52,7 @@ public class NacosAuthManager {
     private JwtTokenManager tokenManager;
     
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager; // org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter$AuthenticationManagerDelegator@16a499d1
     
     @Autowired
     private NacosRoleServiceImpl roleService;
@@ -68,7 +68,7 @@ public class NacosAuthManager {
         HttpServletRequest req = (HttpServletRequest) request;
         String token = resolveToken(req);
         validate0(token);
-        NacosUser user = getNacosUser(token);
+        NacosUser user = getNacosUser(token); // NacosUser{token='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWNvcyIsImV4cCI6MTY5NzcxNDczMX0.Kor4iwXawyOcsCpVcsBhERkcCmkywbXEBYGkiGLlCDA', globalAdmin=true}
         req.getSession().setAttribute(AuthConstants.NACOS_USER_KEY, user);
         req.getSession().setAttribute(com.alibaba.nacos.plugin.auth.constant.Constants.Identity.IDENTITY_ID,
                 user.getUserName());
@@ -110,7 +110,7 @@ public class NacosAuthManager {
         if (StringUtils.isBlank(bearerToken)) {
             String userName = request.getParameter(AuthConstants.PARAM_USERNAME);
             String password = request.getParameter(AuthConstants.PARAM_PASSWORD);
-            bearerToken = resolveTokenFromUser(userName, password);
+            bearerToken = resolveTokenFromUser(userName, password); // 获取token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWNvcyIsImV4cCI6MTY5NzUzNzYwMH0.50CK9z6t_aTRy4gdEeshtW3OpmWTneRwA7aq_Ro1S3Y
         }
         
         return bearerToken;
@@ -136,7 +136,7 @@ public class NacosAuthManager {
         try {
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,
                     rawPassword);
-            authenticate = authenticationManager.authenticate(authenticationToken);
+            authenticate = authenticationManager.authenticate(authenticationToken); // 用户名和密码校验
         } catch (AuthenticationException e) {
             throw new AccessException("unknown user!");
         }
@@ -144,7 +144,7 @@ public class NacosAuthManager {
         if (null == authenticate || StringUtils.isBlank(authenticate.getName())) {
             finalName = userName;
         } else {
-            finalName = authenticate.getName();
+            finalName = authenticate.getName(); // nacos
         }
         
         return tokenManager.createToken(finalName);
@@ -172,7 +172,7 @@ public class NacosAuthManager {
         NacosUser user = new NacosUser();
         user.setUserName(username);
         user.setToken(token);
-        List<RoleInfo> roleInfoList = roleService.getRoles(username);
+        List<RoleInfo> roleInfoList = roleService.getRoles(username); // RoleInfo{role='ROLE_ADMIN', username='nacos'}
         if (roleInfoList != null) {
             for (RoleInfo roleInfo : roleInfoList) {
                 if (roleInfo.getRole().equals(AuthConstants.GLOBAL_ADMIN_ROLE)) {

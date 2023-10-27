@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The manager of {@code IpPortBasedClient} and ephemeral.
- *
+ * 管理器，管理零时节点客户端（零时节点定义：个人理解为没有心跳就会被删除，就比如zk的零时节点永久节点）
  * @author xiweng.yy
  */
 @DependsOn("clientServiceIndexesManager")
@@ -55,7 +55,7 @@ public class EphemeralIpPortClientManager implements ClientManager {
     
     private final DistroMapper distroMapper;
     
-    private final ClientFactory<IpPortBasedClient> clientFactory;
+    private final ClientFactory<IpPortBasedClient> clientFactory; // class com.alibaba.nacos.naming.core.v2.client.factory.impl.EphemeralIpPortClientFactory
     
     public EphemeralIpPortClientManager(DistroMapper distroMapper, SwitchDomain switchDomain) {
         this.distroMapper = distroMapper;
@@ -74,7 +74,7 @@ public class EphemeralIpPortClientManager implements ClientManager {
         clients.computeIfAbsent(client.getClientId(), s -> {
             Loggers.SRV_LOG.info("Client connection {} connect", client.getClientId());
             IpPortBasedClient ipPortBasedClient = (IpPortBasedClient) client;
-            ipPortBasedClient.init();
+            ipPortBasedClient.init(); // 初始化客户端
             return ipPortBasedClient;
         });
         return true;

@@ -59,9 +59,9 @@ public class HttpLoginProcessor implements LoginProcessor {
     public LoginIdentityContext getResponse(Properties properties) {
         
         String contextPath = ContextPathUtil
-                .normalizeContextPath(properties.getProperty(PropertyKeyConst.CONTEXT_PATH, webContext));
-        String server = properties.getProperty(NacosAuthLoginConstant.SERVER, StringUtils.EMPTY);
-        String url = HTTP_PREFIX + server + contextPath + LOGIN_URL;
+                .normalizeContextPath(properties.getProperty(PropertyKeyConst.CONTEXT_PATH, webContext)); // /nacos
+        String server = properties.getProperty(NacosAuthLoginConstant.SERVER, StringUtils.EMPTY); // localhost
+        String url = HTTP_PREFIX + server + contextPath + LOGIN_URL; // http://localhost/nacos/v1/auth/users/login
         
         if (server.contains(Constants.HTTP_PREFIX)) {
             url = server + contextPath + LOGIN_URL;
@@ -80,9 +80,9 @@ public class HttpLoginProcessor implements LoginProcessor {
             }
             JsonNode obj = JacksonUtils.toObj(restResult.getData());
     
-            LoginIdentityContext loginIdentityContext = new LoginIdentityContext();
+            LoginIdentityContext loginIdentityContext = new LoginIdentityContext(); // 登录成功，需要保存一下token信息
             
-            if (obj.has(Constants.ACCESS_TOKEN)) {
+            if (obj.has(Constants.ACCESS_TOKEN)) { // 服务器返回信息包含：key=accessToken
                 loginIdentityContext
                         .setParameter(NacosAuthLoginConstant.ACCESSTOKEN, obj.get(Constants.ACCESS_TOKEN).asText());
                 loginIdentityContext.setParameter(NacosAuthLoginConstant.TOKENTTL, obj.get(Constants.TOKEN_TTL).asText());

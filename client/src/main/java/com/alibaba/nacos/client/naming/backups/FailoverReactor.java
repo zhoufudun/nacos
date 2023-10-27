@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
 
 /**
- * Failover reactor.
+ * Failover reactor.  read
  *
  * @author nkorange
  */

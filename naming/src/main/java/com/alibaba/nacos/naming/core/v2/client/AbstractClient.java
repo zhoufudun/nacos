@@ -43,7 +43,7 @@ import static com.alibaba.nacos.naming.constants.ClientConstants.REVISION;
  */
 public abstract class AbstractClient implements Client {
     
-    protected final ConcurrentHashMap<Service, InstancePublishInfo> publishers = new ConcurrentHashMap<>(16, 0.75f, 1);
+    protected final ConcurrentHashMap<Service, InstancePublishInfo> publishers = new ConcurrentHashMap<>(16, 0.75f, 1); // key={Service{namespace='public', group='DEFAULT_GROUP', name='jinhan6BQJP.LEBFG.com', ephemeral=true, revision=4}   value= InstancePublishInfo{ip='127.0.0.1', port=8081, healthy=true, cluster='DEFAULT'}}
     
     protected final ConcurrentHashMap<Service, Subscriber> subscribers = new ConcurrentHashMap<>(16, 0.75f, 1);
     
@@ -67,7 +67,7 @@ public abstract class AbstractClient implements Client {
     }
     
     @Override
-    public boolean addServiceInstance(Service service, InstancePublishInfo instancePublishInfo) {
+    public boolean addServiceInstance(Service service, InstancePublishInfo instancePublishInfo) { //
         if (null == publishers.put(service, instancePublishInfo)) {
             if (instancePublishInfo instanceof BatchInstancePublishInfo) {
                 MetricsMonitor.incrementIpCountWithBatchRegister(instancePublishInfo);

@@ -110,6 +110,6 @@ public interface ClientOperationService {
                 : instance.getClusterName();
         result.setHealthy(instance.isHealthy());
         result.setCluster(clusterName);
-        return result;
+        return result; // InstancePublishInfo{ip='127.0.0.1', port=8081, healthy=true, cluster='DEFAULT'}
     }
 }

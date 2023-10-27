@@ -77,7 +77,7 @@ public class DefaultPublisher extends Thread implements EventPublisher {
     public synchronized void start() {
         if (!initialized) {
             // start just called once
-            super.start();
+            super.start(); // 开启线程
             if (queueMaxSize == -1) {
                 queueMaxSize = ringBufferSize;
             }

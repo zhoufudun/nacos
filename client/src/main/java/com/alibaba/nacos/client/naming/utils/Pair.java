@@ -27,7 +27,7 @@ public class Pair<T> {
     
     private final double weight;
     
-    public Pair(T item, double weight) {
+    public Pair(T item, double weight) { //item: Instance{instanceId='null', ip='null', port=0, weight=1.0, healthy=true, enabled=true, ephemeral=true, clusterName='null', serviceName='null', metadata={}}  、  weight=1.0
         this.item = item;
         this.weight = weight;
     }

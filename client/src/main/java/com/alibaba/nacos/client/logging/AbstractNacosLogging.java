@@ -39,8 +39,8 @@ public abstract class AbstractNacosLogging {
     static {
         String loggingPath = System.getProperty(Constants.SysEnv.JM_LOG_PATH);
         if (StringUtils.isBlank(loggingPath)) {
-            String userHome = System.getProperty(Constants.SysEnv.USER_HOME);
-            System.setProperty(Constants.SysEnv.JM_LOG_PATH, userHome + File.separator + NACOS_LOGGING_PATH_DIR);
+            String userHome = System.getProperty(Constants.SysEnv.USER_HOME); // C:\Users\Administrator
+            System.setProperty(Constants.SysEnv.JM_LOG_PATH, userHome + File.separator + NACOS_LOGGING_PATH_DIR); // C:\Users\Administrator\logs
         }
     }
     

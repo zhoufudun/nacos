@@ -168,7 +168,7 @@ public class RaftCore implements Closeable {
             stopWork = true;
             return;
         }
-        
+        // 加载数据：
         raftStore.loadDatums(notifier, datums);
         
         setTerm(NumberUtils.toLong(raftStore.loadMeta().getProperty("term"), 0L));

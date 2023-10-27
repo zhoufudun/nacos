@@ -94,7 +94,7 @@ public class SwitchDomain implements Record, Cloneable {
      */
     private String pushGoVersion = "0.1.0";
     
-    private String pushJavaVersion = "0.1.0";
+    private String pushJavaVersion = "0.1.0"; // 对于java客户端，客户端版本>=pushJavaVersion, 表示可以主动推送消息给客户端
     
     private String pushPythonVersion = "0.4.3";
     

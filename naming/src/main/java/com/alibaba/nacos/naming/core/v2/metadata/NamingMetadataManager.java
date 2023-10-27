@@ -45,9 +45,9 @@ public class NamingMetadataManager extends SmartSubscriber {
     
     private final Set<ExpiredMetadataInfo> expiredMetadataInfos;
     
-    private ConcurrentMap<Service, ServiceMetadata> serviceMetadataMap;
+    private ConcurrentMap<Service, ServiceMetadata> serviceMetadataMap;// key=Service{namespace='public', group='DEFAULT_GROUP', name='1215906004s9Dk4@qq2kqww@qqcom', ephemeral=true, revision=0}  value=
     
-    private ConcurrentMap<Service, ConcurrentMap<String, InstanceMetadata>> instanceMetadataMap;
+    private ConcurrentMap<Service, ConcurrentMap<String, InstanceMetadata>> instanceMetadataMap; // key=  {Service@13979} "Service{namespace='public', group='DEFAULT_GROUP', name='jinhanEAhmw.442sT.com', ephemeral=true, revision=4}" -> {ConcurrentHashMap@14698}  size = 0
     
     private static final int INITIAL_CAPACITY = 1;
     
@@ -243,7 +243,7 @@ public class NamingMetadataManager extends SmartSubscriber {
     
     private void handleServiceMetadataEvent(MetadataEvent.ServiceMetadataEvent event) {
         Service service = event.getService(); // Service{namespace='public', group='DEFAULT_GROUP', name='MOCK_SERVER_NAME', ephemeral=true, revision=2}
-        if (containServiceMetadata(service)) {
+        if (containServiceMetadata(service)) { // 缓存包含了指定的服务的元数据，才更新信息
             updateExpiredInfo(event.isExpired(), ExpiredMetadataInfo.newExpiredServiceMetadata(service));
         }
     }

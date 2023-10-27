@@ -48,7 +48,7 @@ public class AuthPluginManager {
     }
     
     private void initAuthServices() {
-        Collection<AuthPluginService> authPluginServices = NacosServiceLoader.load(AuthPluginService.class);
+        Collection<AuthPluginService> authPluginServices = NacosServiceLoader.load(AuthPluginService.class); // 先从缓存加载，缓存没有的话，通过SPI加载并且保存到缓存
         for (AuthPluginService each : authPluginServices) {
             if (StringUtils.isEmpty(each.getAuthServiceName())) {
                 LOGGER.warn(
@@ -56,7 +56,7 @@ public class AuthPluginManager {
                         each.getClass());
                 continue;
             }
-            authServiceMap.put(each.getAuthServiceName(), each);
+            authServiceMap.put(each.getAuthServiceName(), each); // key=
             LOGGER.info("[AuthPluginManager] Load AuthPluginService({}) AuthServiceName({}) successfully.",
                     each.getClass(), each.getAuthServiceName());
         }

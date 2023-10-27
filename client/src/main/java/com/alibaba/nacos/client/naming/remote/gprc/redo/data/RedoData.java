@@ -32,11 +32,15 @@ public abstract class RedoData<T> {
     
     /**
      * If {@code true} means cached data has been registered to server successfully.
+     *
+     * true==意味着缓存的数据已成功注册到服务器
      */
     private volatile boolean registered;
     
     /**
      * If {@code true} means cached data is unregistering from server.
+     *
+     * true==意味着缓存的数据正在从服务器注销
      */
     private volatile boolean unregistering;
     

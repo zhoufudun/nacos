@@ -329,12 +329,12 @@ public class JRaftServer {
         FailoverClosureImpl closure = new FailoverClosureImpl(future);
         
         final Node node = tuple.node;
-        if (node.isLeader()) {
+        if (node.isLeader()) { // 本节点是主节点，处理请求
             // The leader node directly applies this request
             applyOperation(node, data, closure);
         } else {
             // Forward to Leader for request processing
-            invokeToLeader(group, data, rpcRequestTimeoutMs, closure);
+            invokeToLeader(group, data, rpcRequestTimeoutMs, closure); // 转化给给leader节点，让主节点处理请求
         }
         return future;
     }
@@ -394,7 +394,8 @@ public class JRaftServer {
         }
     }
     
-    public void applyOperation(Node node, Message data, FailoverClosure closure) {
+    public void applyOperation(Node node, Message data, FailoverClosure closure) { // data:  group: "naming_service_metadata"data: "C0;com.alibaba.nacos.naming.core.v2.metadata.MetadataOperation\225\tnamespace\005group\vserviceName\003tag\bmetadata`\006public\rDEFAULT_GROUP\03512159060048x9Gm@qq41A0s@qqcomNC09com.alibaba.nacos.naming.core.v2.metadata.ServiceMetadata\225\tephemeral\020protectThreshold\bselector\nextendData\bclustersaF\\C0/com.alibaba.nacos.naming.selector.LabelSelector\222\nexpression\006labelsb0DCONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.Br\021java.util.HashSet\001A\001BM\027java.util.LinkedHashMap\03512159060048x9Gm@qq41A0s@qqcom\033this is a register metadataZM0&java.util.concurrent.ConcurrentHashMapZ" operation: "CHANGE"
+
         final Task task = new Task();
         task.setDone(new NacosClosure(data, status -> {
             NacosClosure.NacosStatus nacosStatus = (NacosClosure.NacosStatus) status;

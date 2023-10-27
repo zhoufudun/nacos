@@ -106,20 +106,20 @@ public class AuthFilter implements Filter {
                 return;
             }
             
-            if (method.isAnnotationPresent(Secured.class) && authConfigs.isAuthEnabled()) {
+            if (method.isAnnotationPresent(Secured.class) && authConfigs.isAuthEnabled()) { // 方法生有Secured注解，并且开启了认证开关
                 
                 if (Loggers.AUTH.isDebugEnabled()) {
                     Loggers.AUTH.debug("auth start, request: {} {}", req.getMethod(), req.getRequestURI());
                 }
                 
                 Secured secured = method.getAnnotation(Secured.class);
-                if (!protocolAuthService.enableAuth(secured)) {
+                if (!protocolAuthService.enableAuth(secured)) { // 判断是否需要认证
                     chain.doFilter(request, response);
                     return;
                 }
                 Resource resource = protocolAuthService.parseResource(req, secured);
-                IdentityContext identityContext = protocolAuthService.parseIdentity(req);
-                boolean result = protocolAuthService.validateIdentity(identityContext, resource);
+                IdentityContext identityContext = protocolAuthService.parseIdentity(req); // 解析出请求表示的特征上下文
+                boolean result = protocolAuthService.validateIdentity(identityContext, resource); // 执行认证
                 if (!result) {
                     // TODO Get reason of failure
                     throw new AccessException("Validate Identity failed.");
@@ -149,6 +149,8 @@ public class AuthFilter implements Filter {
     
     /**
      * Set identity id to request session, make sure some actual logic can get identity information.
+     *
+     * 特征id保存到HttpServletRequest的session会话中，下次再次登录可以重新使用
      *
      * <p>May be replaced with whole identityContext.
      *

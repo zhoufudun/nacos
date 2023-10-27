@@ -304,9 +304,9 @@ public class UdpPushService implements ApplicationContextAware, ApplicationListe
             return false;
         }
         
-        ClientInfo clientInfo = new ClientInfo(agent);
+        ClientInfo clientInfo = new ClientInfo(agent); // 用客户端Header中传递的agent构造一个的代表客户端的对象
         
-        if (ClientInfo.ClientType.JAVA == clientInfo.type
+        if (ClientInfo.ClientType.JAVA == clientInfo.type // java客户端，并且客户端的版本
                 && clientInfo.version.compareTo(VersionUtil.parseVersion(switchDomain.getPushJavaVersion())) >= 0) {
             return true;
         } else if (ClientInfo.ClientType.DNS == clientInfo.type

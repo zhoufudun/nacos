@@ -204,7 +204,7 @@ public class UserController {
     }
     
     /**
-     * Login to Nacos
+     * Login to Nacos : 客户端第一次上线会先登录，之后定时任务定时登录
      *
      * <p>This methods uses username and password to require a new token.
      *
@@ -230,7 +230,7 @@ public class UserController {
             result.put(Constants.TOKEN_TTL, jwtTokenManager.getTokenValidityInSeconds());
             result.put(Constants.GLOBAL_ADMIN, user.isGlobalAdmin());
             result.put(Constants.USERNAME, user.getUserName());
-            return result;
+            return result; // {"accessToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWNvcyIsImV4cCI6MTY5NzcxNDczMX0.Kor4iwXawyOcsCpVcsBhERkcCmkywbXEBYGkiGLlCDA","tokenTtl":18000,"globalAdmin":true,"username":"nacos"}
         }
         
         // create Authentication class through username and password, the implement class is UsernamePasswordAuthenticationToken

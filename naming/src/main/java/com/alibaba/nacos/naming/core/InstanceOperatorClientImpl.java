@@ -58,14 +58,14 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Instance service.
+ * Instance service.  客户端实例相关的操作
  *
  * @author xiweng.yy
  */
 @org.springframework.stereotype.Service
 public class InstanceOperatorClientImpl implements InstanceOperator {
     
-    private final ClientManager clientManager;
+    private final ClientManager clientManager; //com.alibaba.nacos.naming.core.v2.client.manager.ClientManagerDelegate@68e24e7
     
     private final ClientOperationService clientOperationService;
     
@@ -119,17 +119,17 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
     }
     
     @Override
-    public void updateInstance(String namespaceId, String serviceName, Instance instance) throws NacosException {
+    public void updateInstance(String namespaceId, String serviceName, Instance instance) throws NacosException { // 处理客户端发起的更新实例请求
         NamingUtils.checkInstanceIsLegal(instance);
         
-        Service service = getService(namespaceId, serviceName, instance.isEphemeral());
+        Service service = getService(namespaceId, serviceName, instance.isEphemeral()); // new Service(...)
         if (!ServiceManager.getInstance().containSingleton(service)) {
             throw new NacosException(NacosException.INVALID_PARAM,
                     "service not found, namespace: " + namespaceId + ", service: " + service);
         }
         String metadataId = InstancePublishInfo
-                .genMetadataId(instance.getIp(), instance.getPort(), instance.getClusterName());
-        metadataOperateService.updateInstanceMetadata(service, metadataId, buildMetadata(instance));
+                .genMetadataId(instance.getIp(), instance.getPort(), instance.getClusterName()); // 组装元数据ID
+        metadataOperateService.updateInstanceMetadata(service, metadataId, buildMetadata(instance)); // 执行更新
     }
     
     private InstanceMetadata buildMetadata(Instance instance) {
@@ -177,14 +177,14 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
     @Override
     public ServiceInfo listInstance(String namespaceId, String serviceName, Subscriber subscriber, String cluster,
             boolean healthOnly) {
-        Service service = getService(namespaceId, serviceName, true);
+        Service service = getService(namespaceId, serviceName, true); // Service{namespace='public', group='DEFAULT_GROUP', name='jinhan00tD3.m742J.net', ephemeral=true, revision=0}
         // For adapt 1.X subscribe logic
-        if (subscriber.getPort() > 0 && pushService.canEnablePush(subscriber.getAgent())) {
-            String clientId = IpPortBasedClient.getClientId(subscriber.getAddrStr(), true);
+        if (subscriber.getPort() > 0 && pushService.canEnablePush(subscriber.getAgent())) { // 可以主动推送消息给消息的来源方（客户端）
+            String clientId = IpPortBasedClient.getClientId(subscriber.getAddrStr(), true); // 10.2.40.18:50978#true
             createIpPortClientIfAbsent(clientId);
             clientOperationService.subscribeService(service, subscriber, clientId);
         }
-        ServiceInfo serviceInfo = serviceStorage.getData(service);
+        ServiceInfo serviceInfo = serviceStorage.getData(service);  // Service{namespace='public', group='DEFAULT_GROUP', name='jinhan00tD3.m742J.net', ephemeral=true, revision=0}
         ServiceMetadata serviceMetadata = metadataManager.getServiceMetadata(service).orElse(null);
         ServiceInfo result = ServiceUtil
                 .selectInstancesWithHealthyProtection(serviceInfo, serviceMetadata, cluster, healthOnly, true, subscriber.getIp());
@@ -218,11 +218,11 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
     public int handleBeat(String namespaceId, String serviceName, String ip, int port, String cluster,
             RsInfo clientBeat, BeatInfoInstanceBuilder builder) throws NacosException {
         Service service = getService(namespaceId, serviceName, true);
-        String clientId = IpPortBasedClient.getClientId(ip + InternetAddressUtil.IP_PORT_SPLITER + port, true);
+        String clientId = IpPortBasedClient.getClientId(ip + InternetAddressUtil.IP_PORT_SPLITER + port, true); // 1.1.1.1:800#true
         IpPortBasedClient client = (IpPortBasedClient) clientManager.getClient(clientId);
         if (null == client || !client.getAllPublishedService().contains(service)) {
             if (null == clientBeat) {
-                return NamingResponseCode.RESOURCE_NOT_FOUND;
+                return NamingResponseCode.RESOURCE_NOT_FOUND; // 客户端根据这错误码进行服务注册
             }
             Instance instance = builder.setBeatInfo(clientBeat).setServiceName(serviceName).build();
             registerInstance(namespaceId, serviceName, instance);
@@ -331,8 +331,8 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
     }
     
     private Service getService(String namespaceId, String serviceName, boolean ephemeral) {
-        String groupName = NamingUtils.getGroupName(serviceName);
-        String serviceNameNoGrouped = NamingUtils.getServiceName(serviceName);
+        String groupName = NamingUtils.getGroupName(serviceName); //DEFAULT_GROUP
+        String serviceNameNoGrouped = NamingUtils.getServiceName(serviceName);//DEFAULT_GROUP@@nacos.test.1
         return Service.newService(namespaceId, groupName, serviceNameNoGrouped, ephemeral);
     }
     

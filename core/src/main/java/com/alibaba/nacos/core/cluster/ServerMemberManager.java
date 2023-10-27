@@ -103,7 +103,7 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
     /**
      * Cluster node list.
      */
-    private volatile ConcurrentSkipListMap<String, Member> serverList;
+    private volatile ConcurrentSkipListMap<String, Member> serverList; // 集群中的nacos节点
     
     /**
      * Is this node in the cluster list.
@@ -118,7 +118,7 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
     /**
      * Address information for the local node.
      */
-    private String localAddress;
+    private String localAddress; // 本nacos服务节点地址
     
     /**
      * Addressing pattern instances.

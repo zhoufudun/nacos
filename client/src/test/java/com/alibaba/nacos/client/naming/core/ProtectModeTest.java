@@ -19,6 +19,9 @@ package com.alibaba.nacos.client.naming.core;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * read
+ */
 public class ProtectModeTest {
     
     @Test

@@ -54,9 +54,9 @@ public class NamingMetadataOperateService {
      * @param serviceMetadata metadata
      */
     public void updateServiceMetadata(Service service, ServiceMetadata serviceMetadata) {
-        MetadataOperation<ServiceMetadata> operation = buildMetadataOperation(service);
+        MetadataOperation<ServiceMetadata> operation = buildMetadataOperation(service); // Service{namespace='public', group='DEFAULT_GROUP', name='1215906004XHUN2@qqbzkx8@qqcom', ephemeral=true, revision=0}
         operation.setMetadata(serviceMetadata);
-        WriteRequest operationLog = WriteRequest.newBuilder().setGroup(Constants.SERVICE_METADATA)
+        WriteRequest operationLog = WriteRequest.newBuilder().setGroup(Constants.SERVICE_METADATA) // 构造WriteRequest对象
                 .setOperation(DataOperation.CHANGE.name()).setData(ByteString.copyFrom(serializer.serialize(operation)))
                 .build();
         submitMetadataOperation(operationLog);
@@ -83,13 +83,13 @@ public class NamingMetadataOperateService {
      * @param instanceMetadata metadata
      */
     public void updateInstanceMetadata(Service service, String metadataId, InstanceMetadata instanceMetadata) {
-        MetadataOperation<InstanceMetadata> operation = buildMetadataOperation(service);
+        MetadataOperation<InstanceMetadata> operation = buildMetadataOperation(service); // 组装MetadataOperation
         operation.setTag(metadataId);
         operation.setMetadata(instanceMetadata);
         WriteRequest operationLog = WriteRequest.newBuilder().setGroup(Constants.INSTANCE_METADATA)
                 .setOperation(DataOperation.CHANGE.name()).setData(ByteString.copyFrom(serializer.serialize(operation)))
-                .build();
-        submitMetadataOperation(operationLog);
+                .build(); // 构造写请求：WriteRequest
+        submitMetadataOperation(operationLog); //
     }
     
     /**
@@ -136,8 +136,8 @@ public class NamingMetadataOperateService {
     
     private void submitMetadataOperation(WriteRequest operationLog) {
         try {
-            Response response = cpProtocol.write(operationLog);
-            if (!response.getSuccess()) {
+            Response response = cpProtocol.write(operationLog); // CP协议, response :
+            if (!response.getSuccess()) { // success: true
                 throw new NacosRuntimeException(NacosException.SERVER_ERROR,
                         "do metadata operation failed " + response.getErrMsg());
             }

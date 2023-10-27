@@ -22,6 +22,9 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * read
+ */
 public class CredentialWatcherTest {
     
     @Test

@@ -208,8 +208,8 @@ public class ServerListManager implements Closeable {
                     }
                 }
             }
-            this.serverUrls = serverAddrs;
-            this.name = initServerName(properties);
+            this.serverUrls = serverAddrs; // http://1.1.1.1:8848
+            this.name = initServerName(properties); // fixed-1.1.1.1_8848
             
         } else {
             if (StringUtils.isBlank(endpoint)) {

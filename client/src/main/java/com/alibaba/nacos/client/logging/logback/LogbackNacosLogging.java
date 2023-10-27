@@ -55,7 +55,7 @@ public class LogbackNacosLogging extends AbstractNacosLogging {
     }
 
     private LoggerContext loadConfigurationOnStart() {
-        String location = getLocation(NACOS_LOGBACK_LOCATION);
+        String location = getLocation(NACOS_LOGBACK_LOCATION); // classpath:nacos-logback.xml
         try {
             LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
             NacosJoranConfigurator configurator = new NacosJoranConfigurator();

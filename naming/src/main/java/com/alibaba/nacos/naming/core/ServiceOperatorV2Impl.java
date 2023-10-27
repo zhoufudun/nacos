@@ -64,7 +64,7 @@ public class ServiceOperatorV2Impl implements ServiceOperator {
     
     @Override
     public void create(String namespaceId, String serviceName, ServiceMetadata metadata) throws NacosException {
-        Service service = getServiceFromGroupedServiceName(namespaceId, serviceName, metadata.isEphemeral());
+        Service service = getServiceFromGroupedServiceName(namespaceId, serviceName, metadata.isEphemeral());// new 实例
         create(service, metadata);
     }
     
@@ -119,7 +119,7 @@ public class ServiceOperatorV2Impl implements ServiceOperator {
     
     @Override
     public ObjectNode queryService(String namespaceId, String serviceName) throws NacosException {
-        Service service = getServiceFromGroupedServiceName(namespaceId, serviceName, true);
+        Service service = getServiceFromGroupedServiceName(namespaceId, serviceName, true); // new Service(): Service{namespace='public', group='DEFAULT_GROUP', name='1215906004s9Dk4@qq2kqww@qqcom', ephemeral=true, revision=0}
         if (!ServiceManager.getInstance().containSingleton(service)) {
             throw new NacosException(NacosException.INVALID_PARAM,
                     "service not found, namespace: " + namespaceId + ", serviceName: " + serviceName);
@@ -134,7 +134,7 @@ public class ServiceOperatorV2Impl implements ServiceOperator {
                             : new ClusterMetadata();
             clusters.add(newClusterNode(each, clusterMetadata));
         }
-        result.set(FieldsConstants.CLUSTERS, clusters);
+        result.set(FieldsConstants.CLUSTERS, clusters); // 设置集群信息
         return result;
     }
     
@@ -174,7 +174,7 @@ public class ServiceOperatorV2Impl implements ServiceOperator {
         serviceDetail.put(FieldsConstants.PROTECT_THRESHOLD, serviceMetadata.getProtectThreshold());
         serviceDetail
                 .replace(FieldsConstants.METADATA, JacksonUtils.transferToJsonNode(serviceMetadata.getExtendData()));
-        serviceDetail.replace(FieldsConstants.SELECTOR, JacksonUtils.transferToJsonNode(serviceMetadata.getSelector()));
+        serviceDetail.replace(FieldsConstants.SELECTOR, JacksonUtils.transferToJsonNode(serviceMetadata.getSelector())); // serverDetail={"namespaceId":"public","groupName":"DEFAULT_GROUP","name":"1215906004s9Dk4@qq2kqww@qqcom","protectThreshold":1.0,"metadata":{"1215906004s9Dk4@qq2kqww@qqcom":"this is a register metadata"},"selector":{"type":"label","expression":"CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B","labels":["A","B"],"contextType":"CMDB"}}
     }
     
     private void setServiceMetadata(ServiceDetailInfo serviceDetail, ServiceMetadata serviceMetadata, Service service) {
@@ -227,7 +227,7 @@ public class ServiceOperatorV2Impl implements ServiceOperator {
     private Service getServiceFromGroupedServiceName(String namespaceId, String groupedServiceName, boolean ephemeral) {
         String groupName = NamingUtils.getGroupName(groupedServiceName);
         String serviceName = NamingUtils.getServiceName(groupedServiceName);
-        return Service.newService(namespaceId, groupName, serviceName, ephemeral);
+        return Service.newService(namespaceId, groupName, serviceName, ephemeral); // new Service()
     }
     
     @Override

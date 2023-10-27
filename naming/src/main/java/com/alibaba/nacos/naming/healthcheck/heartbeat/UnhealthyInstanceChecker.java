@@ -71,7 +71,7 @@ public class UnhealthyInstanceChecker implements InstanceBeatChecker {
     }
     
     private void changeHealthyStatus(Client client, Service service, HealthCheckInstancePublishInfo instance) {
-        instance.setHealthy(false);
+        instance.setHealthy(false); // 客户端实例不是健康状态，这里需要发布三个事件
         Loggers.EVT_LOG
                 .info("{POS} {IP-DISABLED} valid: {}:{}@{}@{}, region: {}, msg: client last beat: {}", instance.getIp(),
                         instance.getPort(), instance.getCluster(), service.getName(), UtilsAndCommons.LOCALHOST_SITE,

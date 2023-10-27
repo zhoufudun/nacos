@@ -163,7 +163,7 @@ public abstract class RpcClient implements Closeable {
         LoggerUtils.printIfInfoEnabled(LOGGER, "[{}] Notify disconnected event to listeners", rpcClientConfig.name());
         for (ConnectionEventListener connectionEventListener : connectionEventListeners) {
             try {
-                connectionEventListener.onDisConnect();
+                connectionEventListener.onDisConnect(); // 客户端断开，执行回调
             } catch (Throwable throwable) {
                 LoggerUtils.printIfErrorEnabled(LOGGER, "[{}] Notify disconnect listener error, listener = {}",
                         rpcClientConfig.name(), connectionEventListener.getClass().getName());

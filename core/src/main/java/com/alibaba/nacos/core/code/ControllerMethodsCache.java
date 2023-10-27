@@ -120,9 +120,9 @@ public class ControllerMethodsCache {
      */
     public void initClassMethod(String packageName) {
         DefaultPackageScan packageScan = new DefaultPackageScan();
-        Set<Class<Object>> classesList = packageScan.getTypesAnnotatedWith(packageName, RequestMapping.class);
+        Set<Class<Object>> classesList = packageScan.getTypesAnnotatedWith(packageName, RequestMapping.class); // 扫描包下带有指定注解的类
         for (Class clazz : classesList) {
-            initClassMethod(clazz);
+            initClassMethod(clazz); // 初始化每一类
         }
     }
     
@@ -147,17 +147,17 @@ public class ControllerMethodsCache {
         for (String classPath : requestMapping.value()) {
             for (Method method : clazz.getMethods()) {
                 if (!method.isAnnotationPresent(RequestMapping.class)) {
-                    parseSubAnnotations(method, classPath);
+                    parseSubAnnotations(method, classPath); // 如果没有 RequestMapping注解, 那就找一下是否有子注解
                     continue;
                 }
-                requestMapping = method.getAnnotation(RequestMapping.class);
+                requestMapping = method.getAnnotation(RequestMapping.class); // 有RequestMapping注解
                 RequestMethod[] requestMethods = requestMapping.method();
                 if (requestMethods.length == 0) {
                     requestMethods = new RequestMethod[1];
-                    requestMethods[0] = RequestMethod.GET;
+                    requestMethods[0] = RequestMethod.GET; // method没有配置，默认未get方法
                 }
-                for (String methodPath : requestMapping.value()) {
-                    String urlKey = requestMethods[0].name() + REQUEST_PATH_SEPARATOR + classPath + methodPath;
+                for (String methodPath : requestMapping.value()) { // 配置了多个：必须get和post
+                    String urlKey = requestMethods[0].name() + REQUEST_PATH_SEPARATOR + classPath + methodPath; // 勾着每一个请求的唯一标识，做映射的key
                     addUrlAndMethodRelation(urlKey, requestMapping.params(), method);
                 }
             }
@@ -207,11 +207,11 @@ public class ControllerMethodsCache {
         }
     }
     
-    private void addUrlAndMethodRelation(String urlKey, String[] requestParam, Method method) {
+    private void addUrlAndMethodRelation(String urlKey, String[] requestParam, Method method) { // urlKey=POST-->/v1/ns/instance
         RequestMappingInfo requestMappingInfo = new RequestMappingInfo();
         requestMappingInfo.setPathRequestCondition(new PathRequestCondition(urlKey));
         requestMappingInfo.setParamRequestCondition(new ParamRequestCondition(requestParam));
-        List<RequestMappingInfo> requestMappingInfos = urlLookup.get(urlKey);
+        List<RequestMappingInfo> requestMappingInfos = urlLookup.get(urlKey); // urlKey=POST-->/v1/ns/instance
         if (requestMappingInfos == null) {
             urlLookup.putIfAbsent(urlKey, new ArrayList<>());
             requestMappingInfos = urlLookup.get(urlKey);
@@ -220,6 +220,6 @@ public class ControllerMethodsCache {
             urlLookup.putIfAbsent(urlKeyBackup, requestMappingInfos);
         }
         requestMappingInfos.add(requestMappingInfo);
-        methods.put(requestMappingInfo, method);
+        methods.put(requestMappingInfo, method); //key=RequestMappingInfo{pathRequestCondition=PathRequestCondition{pathExpression=PathExpression{method='POST', path='/v1/ns/instance'}}, paramRequestCondition=ParamRequestCondition{expressions=[]}} 、 public java.lang.String com.alibaba.nacos.naming.controllers.InstanceController.register(javax.servlet.http.HttpServletRequest) throws java.lang.Exception
     }
 }

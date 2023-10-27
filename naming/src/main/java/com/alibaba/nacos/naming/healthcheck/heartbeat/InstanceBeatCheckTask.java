@@ -41,7 +41,7 @@ public class InstanceBeatCheckTask implements Interceptable {
     private final HealthCheckInstancePublishInfo instancePublishInfo;
     
     static {
-        CHECKERS.add(new UnhealthyInstanceChecker());
+        CHECKERS.add(new UnhealthyInstanceChecker()); // 本人任务之前前的检查器（作用和拦截器一致）
         CHECKERS.add(new ExpiredInstanceChecker());
         CHECKERS.addAll(NacosServiceLoader.load(InstanceBeatChecker.class));
     }
@@ -49,7 +49,7 @@ public class InstanceBeatCheckTask implements Interceptable {
     public InstanceBeatCheckTask(IpPortBasedClient client, Service service, HealthCheckInstancePublishInfo instancePublishInfo) {
         this.client = client;
         this.service = service;
-        this.instancePublishInfo = instancePublishInfo;
+        this.instancePublishInfo = instancePublishInfo; // InstancePublishInfo{ip='127.0.0.1', port=8081, healthy=true, cluster='DEFAULT'}
     }
     
     @Override

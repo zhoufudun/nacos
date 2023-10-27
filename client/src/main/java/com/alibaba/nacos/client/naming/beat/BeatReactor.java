@@ -160,7 +160,7 @@ public class BeatReactor implements Closeable {
         NAMING_LOGGER.info("{} do shutdown stop", className);
     }
     
-    class BeatTask implements Runnable {
+    class BeatTask implements Runnable {   // 客户端定时心跳任务
         
         BeatInfo beatInfo;
         
@@ -189,8 +189,8 @@ public class BeatReactor implements Closeable {
                 if (result.has(CommonParams.CODE)) {
                     code = result.get(CommonParams.CODE).asInt();
                 }
-                if (code == NamingResponseCode.RESOURCE_NOT_FOUND) {
-                    Instance instance = new Instance();
+                if (code == NamingResponseCode.RESOURCE_NOT_FOUND) { // 如果心跳实例没有找到的话那么就进行重新注册
+                    Instance instance = new Instance(); // 构建心跳信息，为了进行实例在服务注册表中找不到的情况下进行重新注册
                     instance.setPort(beatInfo.getPort());
                     instance.setIp(beatInfo.getIp());
                     instance.setWeight(beatInfo.getWeight());
@@ -201,7 +201,7 @@ public class BeatReactor implements Closeable {
                     instance.setEphemeral(true);
                     try {
                         serverProxy.registerService(beatInfo.getServiceName(),
-                                NamingUtils.getGroupName(beatInfo.getServiceName()), instance);
+                                NamingUtils.getGroupName(beatInfo.getServiceName()), instance); // 发起服务实例注册
                     } catch (Exception ignore) {
                     }
                 }

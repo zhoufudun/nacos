@@ -69,9 +69,9 @@ public class ExpressionInterpreter {
             return new HashSet<>();
         }
         
-        expression = StringUtils.deleteWhitespace(expression);
+        expression = StringUtils.deleteWhitespace(expression); // CONSUMER.label.A=PROVIDER.label.A&CONSUMER.label.B=PROVIDER.label.B
         
-        List<String> elements = getTerms(expression);
+        List<String> elements = getTerms(expression); // [CONSUMER.label.A = PROVIDER.label.A & CONSUMER.label.B = PROVIDER.label.B]
         Set<String> gotLabels = new HashSet<>();
         int index = 0;
         

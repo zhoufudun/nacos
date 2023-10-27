@@ -111,14 +111,14 @@ public class ServiceController {
      */
     @PostMapping
     @Secured(action = ActionTypes.WRITE)
-    public String create(@RequestParam(defaultValue = Constants.DEFAULT_NAMESPACE_ID) String namespaceId,
-            @RequestParam String serviceName,
-            @RequestParam(required = false, defaultValue = "0.0F") float protectThreshold,
-            @RequestParam(defaultValue = StringUtils.EMPTY) String metadata,
-            @RequestParam(defaultValue = StringUtils.EMPTY) String selector) throws Exception {
+    public String create(@RequestParam(defaultValue = Constants.DEFAULT_NAMESPACE_ID) String namespaceId, // public
+            @RequestParam String serviceName, // DEFAULT_GROUP@@12159060048x9Gm@qq41A0s@qqcom
+            @RequestParam(required = false, defaultValue = "0.0F") float protectThreshold, // 1.0
+            @RequestParam(defaultValue = StringUtils.EMPTY) String metadata, // {"12159060048x9Gm@qq41A0s@qqcom":"this is a register metadata"}
+            @RequestParam(defaultValue = StringUtils.EMPTY) String selector) throws Exception { // {"type":"label","expression":"CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B"}
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setProtectThreshold(protectThreshold);
-        serviceMetadata.setSelector(parseSelector(selector));
+        serviceMetadata.setSelector(parseSelector(selector)); // 这个选择器是干嘛的呢？？按规则查询服务实例？？
         serviceMetadata.setExtendData(UtilsAndCommons.parseMetadata(metadata));
         serviceMetadata.setEphemeral(false);
         getServiceOperator().create(namespaceId, serviceName, serviceMetadata);
@@ -195,16 +195,16 @@ public class ServiceController {
     @PutMapping
     @Secured(action = ActionTypes.WRITE)
     public String update(HttpServletRequest request) throws Exception {
-        String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID);
-        String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME);
+        String namespaceId = WebUtils.optional(request, CommonParams.NAMESPACE_ID, Constants.DEFAULT_NAMESPACE_ID); // public
+        String serviceName = WebUtils.required(request, CommonParams.SERVICE_NAME); //DEFAULT_GROUP@@12159060048Tn2D@qq8WsKt@qqnet
         ServiceMetadata serviceMetadata = new ServiceMetadata();
-        serviceMetadata.setProtectThreshold(NumberUtils.toFloat(WebUtils.required(request, "protectThreshold")));
+        serviceMetadata.setProtectThreshold(NumberUtils.toFloat(WebUtils.required(request, "protectThreshold"))); // 保护阈值是干嘛的？？
         serviceMetadata.setExtendData(
-                UtilsAndCommons.parseMetadata(WebUtils.optional(request, "metadata", StringUtils.EMPTY)));
-        serviceMetadata.setSelector(parseSelector(WebUtils.optional(request, "selector", StringUtils.EMPTY)));
+                UtilsAndCommons.parseMetadata(WebUtils.optional(request, "metadata", StringUtils.EMPTY))); // 元数据
+        serviceMetadata.setSelector(parseSelector(WebUtils.optional(request, "selector", StringUtils.EMPTY))); //
         com.alibaba.nacos.naming.core.v2.pojo.Service service = com.alibaba.nacos.naming.core.v2.pojo.Service
                 .newService(namespaceId, NamingUtils.getGroupName(serviceName),
-                        NamingUtils.getServiceName(serviceName));
+                        NamingUtils.getServiceName(serviceName)); // new Service()
         getServiceOperator().update(service, serviceMetadata);
         return "ok";
     }
@@ -392,12 +392,12 @@ public class ServiceController {
             return new NoneSelector();
         }
         
-        JsonNode selectorJson = JacksonUtils.toObj(URLDecoder.decode(selectorJsonString, "UTF-8"));
-        String type = Optional.ofNullable(selectorJson.get("type"))
+        JsonNode selectorJson = JacksonUtils.toObj(URLDecoder.decode(selectorJsonString, "UTF-8")); // {"type":"label","expression":"CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B"}
+        String type = Optional.ofNullable(selectorJson.get("type")) // label
                 .orElseThrow(() -> new NacosException(NacosException.INVALID_PARAM, "not match any type of selector!"))
                 .asText();
-        String expression = Optional.ofNullable(selectorJson.get("expression")).map(JsonNode::asText).orElse(null);
-        Selector selector = selectorManager.parseSelector(type, expression);
+        String expression = Optional.ofNullable(selectorJson.get("expression")).map(JsonNode::asText).orElse(null); // CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B
+        Selector selector = selectorManager.parseSelector(type, expression); // com.alibaba.nacos.naming.selector.LabelSelector@761dafc3
         if (Objects.isNull(selector)) {
             throw new NacosException(NacosException.INVALID_PARAM, "not match any type of selector!");
         }

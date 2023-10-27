@@ -74,7 +74,7 @@ public class NacosRoleServiceImpl {
     private volatile Map<String, List<PermissionInfo>> permissionInfoMap = new ConcurrentHashMap<>();
     
     @Scheduled(initialDelay = 5000, fixedDelay = 15000)
-    private void reload() {
+    private void reload() {  // 15一次，从数据库查询角色信息
         try {
             Page<RoleInfo> roleInfoPage = rolePersistService
                     .getRolesByUserNameAndRoleName(StringUtils.EMPTY, StringUtils.EMPTY, DEFAULT_PAGE_NO, Integer.MAX_VALUE);
@@ -158,13 +158,13 @@ public class NacosRoleServiceImpl {
     }
     
     public List<RoleInfo> getRoles(String username) {
-        List<RoleInfo> roleInfoList = roleInfoMap.get(username);
+        List<RoleInfo> roleInfoList = roleInfoMap.get(username); // 从缓存获取用户角色
         if (!authConfigs.isCachingEnabled() || roleInfoList == null) {
-            Page<RoleInfo> roleInfoPage = getRolesFromDatabase(username, StringUtils.EMPTY, DEFAULT_PAGE_NO, Integer.MAX_VALUE);
+            Page<RoleInfo> roleInfoPage = getRolesFromDatabase(username, StringUtils.EMPTY, DEFAULT_PAGE_NO, Integer.MAX_VALUE); // 从db查询角色
             if (roleInfoPage != null) {
                 roleInfoList = roleInfoPage.getPageItems();
                 if (!Collections.isEmpty(roleInfoList)) {
-                    roleInfoMap.put(username, roleInfoList);
+                    roleInfoMap.put(username, roleInfoList); // db数据缓存起来
                 }
             }
         }

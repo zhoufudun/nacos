@@ -49,7 +49,7 @@ public abstract class AbstractCmdbSelector<T extends Instance> implements Select
     
     @Override
     public Selector<List<T>, CmdbContext<T>, String> parse(String expression) throws NacosException {
-        this.expression = expression;
+        this.expression = expression; // CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B
         doParse(expression);
         return this;
     }

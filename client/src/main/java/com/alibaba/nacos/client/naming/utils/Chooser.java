@@ -79,7 +79,7 @@ public class Chooser<K, T> {
         this(uniqueKey, new ArrayList<Pair<T>>());
     }
     
-    public Chooser(K uniqueKey, List<Pair<T>> pairs) {
+    public Chooser(K uniqueKey, List<Pair<T>> pairs) { // www.taobao.com
         Ref<T> ref = new Ref<>(pairs);
         ref.refresh();
         this.uniqueKey = uniqueKey;
@@ -101,16 +101,16 @@ public class Chooser<K, T> {
      */
     public void refresh(List<Pair<T>> itemsWithWeight) {
         Ref<T> newRef = new Ref<>(itemsWithWeight);
-        newRef.refresh();
+        newRef.refresh(); // 计算内部权重相关数据
         newRef.poller = this.ref.poller.refresh(newRef.items);
         this.ref = newRef;
     }
     
     public class Ref<T> {
         
-        private List<Pair<T>> itemsWithWeight = new ArrayList<>();
+        private List<Pair<T>> itemsWithWeight = new ArrayList<>(); //  size = 1、 Instance{instanceId='null', ip='null', port=0, weight=1.0, healthy=true, enabled=true, ephemeral=true, clusterName='null', serviceName='null', metadata={}}
         
-        private final List<T> items = new ArrayList<>();
+        private final List<T> items = new ArrayList<>(); // Instance{instanceId='null', ip='null', port=0, weight=1.0, healthy=true, enabled=true, ephemeral=true, clusterName='null', serviceName='null', metadata={}}
         
         private Poller<T> poller = new GenericPoller<>(items);
         
@@ -128,7 +128,7 @@ public class Chooser<K, T> {
             
             for (Pair<T> item : itemsWithWeight) {
                 
-                double weight = item.weight();
+                double weight = item.weight(); // 1.0
                 //ignore item which weight is zero.see test_randomWithWeight_weight0 in ChooserTest
                 if (weight <= 0) {
                     continue;
@@ -141,10 +141,10 @@ public class Chooser<K, T> {
                 if (Double.isNaN(weight)) {
                     weight = 1.0D;
                 }
-                originWeightSum += weight;
+                originWeightSum += weight; // 1.0
             }
             
-            double[] exactWeights = new double[items.size()];
+            double[] exactWeights = new double[items.size()]; // 计算每一个的权重比例
             int index = 0;
             for (Pair<T> item : itemsWithWeight) {
                 double singleWeight = item.weight();

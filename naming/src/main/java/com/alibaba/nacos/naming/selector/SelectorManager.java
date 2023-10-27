@@ -52,12 +52,12 @@ public class SelectorManager {
     /**
      * The relationship of context type and {@link SelectorContextBuilder}.
      */
-    private Map<String, SelectorContextBuilder> contextBuilders = new HashMap<>(8);
+    private Map<String, SelectorContextBuilder> contextBuilders = new HashMap<>(8); // {NONE=com.alibaba.nacos.naming.selector.context.NoneSelectorContextBuilder@608b906d, CMDB=com.alibaba.nacos.naming.selector.context.CmdbSelectorContextBuilder@29c80149}
     
     /**
      * The relationship of selector type and {@link Selector} class.
      */
-    private Map<String, Class<? extends Selector>> selectorTypes = new HashMap<>(8);
+    private Map<String, Class<? extends Selector>> selectorTypes = new HashMap<>(8); // {label=class com.alibaba.nacos.naming.selector.LabelSelector, none=class com.alibaba.nacos.naming.selector.NoneSelector}
     
     /**
      * init the {@link Selector} class and {@link SelectorContextBuilder}.
@@ -129,11 +129,11 @@ public class SelectorManager {
      * @param condition the condition provide for {@link Selector#parse(Object)}.
      * @return {@link Selector}.
      */
-    public Selector parseSelector(String type, String condition) throws NacosException {
+    public Selector parseSelector(String type, String condition) throws NacosException { // type=label、 condition=CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B
         if (StringUtils.isBlank(type)) {
             return null;
         }
-        Class<? extends Selector> clazz = selectorTypes.get(type);
+        Class<? extends Selector> clazz = selectorTypes.get(type); // class com.alibaba.nacos.naming.selector.LabelSelector
         if (Objects.isNull(clazz)) {
             return null;
         }

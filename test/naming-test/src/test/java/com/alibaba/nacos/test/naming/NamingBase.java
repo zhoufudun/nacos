@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author nkorange
+ * @author nkorange  read
  */
 public class NamingBase extends HttpClient4Test {
 

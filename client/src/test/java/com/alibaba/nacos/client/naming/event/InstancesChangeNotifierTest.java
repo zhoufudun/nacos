@@ -16,6 +16,7 @@
 
 package com.alibaba.nacos.client.naming.event;
 
+import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
@@ -29,17 +30,28 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+/**
+ * read
+ */
 public class InstancesChangeNotifierTest {
     
     @Test
     public void testRegisterListener() {
+
+        final int[] onEvent = {0};
         String eventScope = "scope-001";
         String group = "a";
         String name = "b";
         String clusters = "c";
         InstancesChangeNotifier instancesChangeNotifier = new InstancesChangeNotifier(eventScope);
-        EventListener listener = Mockito.mock(EventListener.class);
-        instancesChangeNotifier.registerListener(group, name, clusters, listener);
+//        EventListener listener = Mockito.mock(EventListener.class);
+        instancesChangeNotifier.registerListener(group, name, clusters, new EventListener() {
+            @Override
+            public void onEvent(Event event) {
+                System.out.println(event.toString());
+                onEvent[0]++;
+            }
+        });
         List<ServiceInfo> subscribeServices = instancesChangeNotifier.getSubscribeServices();
         Assert.assertEquals(1, subscribeServices.size());
         Assert.assertEquals(group, subscribeServices.get(0).getGroupName());
@@ -51,6 +63,10 @@ public class InstancesChangeNotifierTest {
         hosts.add(ins);
         InstancesChangeEvent event = new InstancesChangeEvent(eventScope, name, group, clusters, hosts);
         Assert.assertEquals(true, instancesChangeNotifier.scopeMatches(event));
+
+        instancesChangeNotifier.onEvent(event);
+
+        Assert.assertEquals(1,onEvent[0]);
     }
     
     @Test

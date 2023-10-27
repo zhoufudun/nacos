@@ -54,7 +54,7 @@ public class JwtTokenManager {
     /**
      * secret key.
      */
-    private String secretKey;
+    private String secretKey; // SecretKey012345678901234567890123456789012345678901234567890123456789
     
     /**
      * secret key byte array.
@@ -64,7 +64,7 @@ public class JwtTokenManager {
     /**
      * Token validity time(seconds).
      */
-    private long tokenValidityInSeconds;
+    private long tokenValidityInSeconds; // 18000
 
     private JwtParser jwtParser;
     
@@ -110,7 +110,7 @@ public class JwtTokenManager {
         
         Claims claims = Jwts.claims().setSubject(userName);
         return Jwts.builder().setClaims(claims).setExpiration(validity)
-                .signWith(Keys.hmacShaKeyFor(this.getSecretKeyBytes()), SignatureAlgorithm.HS256).compact();
+                .signWith(Keys.hmacShaKeyFor(this.getSecretKeyBytes()), SignatureAlgorithm.HS256).compact(); // 通过JWT 生成token
     }
     
     /**
@@ -133,7 +133,7 @@ public class JwtTokenManager {
     }
     
     /**
-     * validate token.
+     * validate token.  验证token是否有效，是否没有过期
      *
      * @param token token
      */
@@ -147,7 +147,7 @@ public class JwtTokenManager {
     public byte[] getSecretKeyBytes() {
         if (secretKeyBytes == null) {
             try {
-                secretKeyBytes = Decoders.BASE64.decode(secretKey);
+                secretKeyBytes = Decoders.BASE64.decode(secretKey); // 安全密钥base64j=加密
             } catch (DecodingException e) {
                 secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
             }

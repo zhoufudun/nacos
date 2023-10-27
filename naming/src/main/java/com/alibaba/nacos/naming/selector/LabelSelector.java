@@ -106,8 +106,8 @@ public class LabelSelector<T extends Instance> extends AbstractCmdbSelector<T> {
     }
     
     @Override
-    protected void doParse(String expression) throws NacosException {
-        this.labels = ExpressionInterpreter.parseExpression(expression);
+    protected void doParse(String expression) throws NacosException { // CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B
+        this.labels = ExpressionInterpreter.parseExpression(expression); // labels=[A, B]
     }
     
     @Override

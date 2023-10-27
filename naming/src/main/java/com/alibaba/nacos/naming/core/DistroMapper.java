@@ -47,9 +47,9 @@ public class DistroMapper extends MemberChangeListener {
      */
     private volatile List<String> healthyList = new ArrayList<>();
     
-    private final SwitchDomain switchDomain;
+    private final SwitchDomain switchDomain; // {"adWeightMap":{},"defaultPushCacheMillis":10000,"clientBeatInterval":5000,"defaultCacheMillis":3000,"distroThreshold":0.7,"healthCheckEnabled":true,"autoChangeHealthCheckEnabled":false,"distroEnabled":true,"enableStandalone":true,"pushEnabled":true,"checkTimes":3,"httpHealthParams":{"max":5000,"min":500,"factor":0.85},"tcpHealthParams":{"max":5000,"min":1000,"factor":0.75},"mysqlHealthParams":{"max":3000,"min":2000,"factor":0.65},"incrementalList":[],"serverStatusSynchronizationPeriodMillis":2000,"serviceStatusSynchronizationPeriodMillis":5000,"disableAddIP":false,"sendBeatOnly":false,"lightBeatEnabled":true,"doubleWriteEnabled":true,"limitedUrlMap":{},"distroServerExpiredMillis":10000,"pushGoVersion":"0.1.0","pushJavaVersion":"0.1.0","pushPythonVersion":"0.4.3","pushCVersion":"1.0.12","pushCSharpVersion":"0.9.0","enableAuthentication":false,"overriddenServerStatus":"UP","defaultInstanceEphemeral":true,"healthCheckWhiteList":[],"name":"00-00---000-NACOS_SWITCH_DOMAIN-000---00-00"}
     
-    private final ServerMemberManager memberManager;
+    private final ServerMemberManager memberManager; // 管理集群中的所有Nacos节点
     
     public DistroMapper(ServerMemberManager memberManager, SwitchDomain switchDomain) {
         this.memberManager = memberManager;
@@ -80,7 +80,7 @@ public class DistroMapper extends MemberChangeListener {
      * @param responsibleTag responsible tag, serviceName for v1 and ip:port for v2
      * @return true if input service is response, otherwise false
      */
-    public boolean responsible(String responsibleTag) {
+    public boolean responsible(String responsibleTag) { // 127.0.0.1:8081
         final List<String> servers = healthyList;
         
         if (!switchDomain.isDistroEnabled() || EnvUtil.getStandaloneMode()) {

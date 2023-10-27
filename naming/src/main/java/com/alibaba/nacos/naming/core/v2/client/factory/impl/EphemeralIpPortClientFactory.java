@@ -37,7 +37,7 @@ public class EphemeralIpPortClientFactory implements ClientFactory<IpPortBasedCl
     
     @Override
     public IpPortBasedClient newClient(String clientId, ClientAttributes attributes) {
-        long revision = attributes.getClientAttribute(REVISION, 0);
+        long revision = attributes.getClientAttribute(REVISION, 0); // 获取客户端的reversion值
         return new IpPortBasedClient(clientId, true, revision);
     }
     

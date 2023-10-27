@@ -341,7 +341,7 @@ public class NotifyCenter {
             return INSTANCE.sharePublisher;
         }
         
-        final String topic = ClassUtils.getCanonicalName(eventType);
+        final String topic = ClassUtils.getCanonicalName(eventType); // com.alibaba.nacos.client.naming.event.InstancesChangeEvent
         synchronized (NotifyCenter.class) {
             // MapUtils.computeIfAbsent is a unsafe method.
             MapUtil.computeIfAbsent(INSTANCE.publisherMap, topic, factory, eventType, queueMaxSize);

@@ -56,9 +56,9 @@ public class IpPortBasedClient extends AbstractClient {
     
     public IpPortBasedClient(String clientId, boolean ephemeral, Long revision) {
         super(revision);
-        this.ephemeral = ephemeral;
-        this.clientId = clientId;
-        this.responsibleId = getResponsibleTagFromId();
+        this.ephemeral = ephemeral; // true
+        this.clientId = clientId; // 10.2.40.18:50978#true
+        this.responsibleId = getResponsibleTagFromId(); // 10.2.40.18:50978
     }
     
     private String getResponsibleTagFromId() {
@@ -131,7 +131,7 @@ public class IpPortBasedClient extends AbstractClient {
      * Init client.
      */
     public void init() {
-        if (ephemeral) {
+        if (ephemeral) { // 临时节点需要心跳检查任务
             beatCheckTask = new ClientBeatCheckTaskV2(this);
             HealthCheckReactor.scheduleCheck(beatCheckTask);
         } else {
