@@ -36,23 +36,23 @@ import java.util.Map;
  */
 @SuppressWarnings("all")
 public abstract class AbstractNacosRestTemplate {
-    
-    private final Map<String, ResponseHandler> responseHandlerMap = new HashMap<String, ResponseHandler>();
-    
+
+    private final Map<String, ResponseHandler> responseHandlerMap = new HashMap<String, ResponseHandler>(); // 根据应答数据类型，选择应答消息处理器
+
     protected final Logger logger;
-    
+
     public AbstractNacosRestTemplate(Logger logger) {
         this.logger = logger;
         initDefaultResponseHandler();
     }
-    
+
     private void initDefaultResponseHandler() {
         // init response handler
         responseHandlerMap.put(ResponseHandlerType.STRING_TYPE, new StringResponseHandler());
         responseHandlerMap.put(ResponseHandlerType.RESTRESULT_TYPE, new RestResultResponseHandler());
         responseHandlerMap.put(ResponseHandlerType.DEFAULT_BEAN_TYPE, new BeanResponseHandler());
     }
-    
+
     /**
      * register customization Response Handler.
      *
@@ -61,7 +61,7 @@ public abstract class AbstractNacosRestTemplate {
     public void registerResponseHandler(String responseHandlerType, ResponseHandler responseHandler) {
         responseHandlerMap.put(responseHandlerType, responseHandler);
     }
-    
+
     /**
      * Select a response handler by responseType.
      *

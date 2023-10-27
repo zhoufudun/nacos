@@ -25,31 +25,31 @@ import io.prometheus.client.Histogram;
  * @author Nacos
  */
 public class MetricsMonitor {
-    
+
     private static final Gauge NACOS_MONITOR = Gauge.build().name("nacos_monitor").labelNames("module", "name")
             .help("nacos_monitor").register();
-    
+
     private static final Histogram NACOS_CLIENT_REQUEST_HISTOGRAM = Histogram.build()
             .labelNames("module", "method", "url", "code").name("nacos_client_request").help("nacos_client_request")
             .register();
-    
+
     public static Gauge.Child getServiceInfoMapSizeMonitor() {
         return NACOS_MONITOR.labels("naming", "serviceInfoMapSize");
     }
-    
+
     public static Gauge.Child getDom2BeatSizeMonitor() {
         return NACOS_MONITOR.labels("naming", "dom2BeatSize");
     }
-    
+
     public static Gauge.Child getListenConfigCountMonitor() {
         return NACOS_MONITOR.labels("naming", "listenConfigCount");
     }
-    
+
     public static Histogram.Timer getConfigRequestMonitor(String method, String url, String code) {
         return NACOS_CLIENT_REQUEST_HISTOGRAM.labels("config", method, url, code).startTimer();
     }
-    
-    public static Histogram.Child getNamingRequestMonitor(String method, String url, String code) {
+
+    public static Histogram.Child getNamingRequestMonitor(String method, String url, String code) { // PUT、http://127.0.0.1:8848/nacos/v1/ns/instance/beat、200
         return NACOS_CLIENT_REQUEST_HISTOGRAM.labels("naming", method, url, code);
     }
 }

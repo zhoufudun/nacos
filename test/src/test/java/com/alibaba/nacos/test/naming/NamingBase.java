@@ -65,10 +65,10 @@ public class NamingBase extends HttpClient4Test {
 
     public static String randomDomainName() {
         StringBuilder sb = new StringBuilder();
-        sb.append("jinhan");
+        sb.append("1215906004");
         for (int i = 0; i < 2; i++) {
             sb.append(RandomUtils.getStringWithNumAndCha(5));
-            sb.append(".");
+            sb.append("@qq");
         }
         int i = RandomUtils.getIntegerBetween(0, 2);
         if (i == 0) {

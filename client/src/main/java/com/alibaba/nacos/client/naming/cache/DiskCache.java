@@ -41,7 +41,7 @@ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
  * @author xuanyin
  */
 public class DiskCache {
-    
+
     /**
      * Write service info to dir.
      *
@@ -49,10 +49,10 @@ public class DiskCache {
      * @param dir directory
      */
     public static void write(ServiceInfo dom, String dir) {
-        
+
         try {
             makeSureCacheDirExists(dir);
-            
+
             File file = new File(dir, dom.getKeyEncoded());
             if (!file.exists()) {
                 // add another !file.exists() to avoid conflicted creating-new-file from multi-instances
@@ -60,74 +60,74 @@ public class DiskCache {
                     throw new IllegalStateException("failed to create cache file");
                 }
             }
-            
+
             StringBuilder keyContentBuffer = new StringBuilder();
-            
+
             String json = dom.getJsonFromServer();
-            
+
             if (StringUtils.isEmpty(json)) {
                 json = JacksonUtils.toJson(dom);
             }
-            
+
             keyContentBuffer.append(json);
-            
+
             //Use the concurrent API to ensure the consistency.
             ConcurrentDiskUtil.writeFileContent(file, keyContentBuffer.toString(), Charset.defaultCharset().toString());
-            
+
         } catch (Throwable e) {
             NAMING_LOGGER.error("[NA] failed to write cache for dom:" + dom.getName(), e);
         }
     }
-    
+
     public static String getLineSeparator() {
         return System.getProperty("line.separator");
     }
-    
+
     /**
-     * Read service info from disk.
+     * Read service info from disk.   从本地磁盘读取服务信息
      *
      * @param cacheDir cache file dir
      * @return service infos
      */
     public static Map<String, ServiceInfo> read(String cacheDir) {
         Map<String, ServiceInfo> domMap = new HashMap<String, ServiceInfo>(16);
-        
+
         BufferedReader reader = null;
         try {
             File[] files = makeSureCacheDirExists(cacheDir).listFiles();
             if (files == null || files.length == 0) {
                 return domMap;
             }
-            
+
             for (File file : files) {
                 if (!file.isFile()) {
                     continue;
                 }
-                
+
                 String fileName = URLDecoder.decode(file.getName(), "UTF-8");
-                
+
                 if (!(fileName.endsWith(Constants.SERVICE_INFO_SPLITER + "meta") || fileName
                         .endsWith(Constants.SERVICE_INFO_SPLITER + "special-url"))) {
                     ServiceInfo dom = new ServiceInfo(fileName);
                     List<Instance> ips = new ArrayList<Instance>();
                     dom.setHosts(ips);
-                    
+
                     ServiceInfo newFormat = null;
-                    
+
                     try {
                         String dataString = ConcurrentDiskUtil
                                 .getFileContent(file, Charset.defaultCharset().toString());
                         reader = new BufferedReader(new StringReader(dataString));
-                        
+
                         String json;
                         while ((json = reader.readLine()) != null) {
                             try {
                                 if (!json.startsWith("{")) {
                                     continue;
                                 }
-                                
+
                                 newFormat = JacksonUtils.toObj(json, ServiceInfo.class);
-                                
+
                                 if (StringUtils.isEmpty(newFormat.getName())) {
                                     ips.add(JacksonUtils.toObj(json, Instance.class));
                                 }
@@ -153,18 +153,18 @@ public class DiskCache {
                         domMap.put(dom.getKey(), dom);
                     }
                 }
-                
+
             }
         } catch (Throwable e) {
             NAMING_LOGGER.error("[NA] failed to read cache file", e);
         }
-        
+
         return domMap;
     }
-    
+
     private static File makeSureCacheDirExists(String dir) {
         File cacheDir = new File(dir);
-        
+
         if (!cacheDir.exists()) {
             if (!cacheDir.mkdirs() && !cacheDir.exists()) {
                 throw new IllegalStateException("failed to create cache dir: " + dir);

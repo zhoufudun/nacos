@@ -54,26 +54,26 @@
     </appender>
 
     <Loggers>
-        <Logger name="com.alibaba.nacos.client" level="${sys:com.alibaba.nacos.config.log.level:-info}"
+        <Logger name="com.alibaba.nacos.client" level="${sys:com.alibaba.nacos.config.log.level:-debug}"
             additivity="false">
             <AppenderRef ref="CONFIG_LOG_FILE"/>
-            <appender-ref ref="CONSOLE"/>
+            <AppenderRef ref="CONSOLE"/>
         </Logger>
 
-        <Logger name="com.alibaba.nacos.client.config" level="${sys:com.alibaba.nacos.config.log.level:-info}"
+        <Logger name="com.alibaba.nacos.client.config" level="${sys:com.alibaba.nacos.config.log.level:-debug}"
             additivity="false">
             <AppenderRef ref="CONFIG_LOG_FILE"/>
-            <appender-ref ref="CONSOLE"/>
+            <AppenderRef ref="CONSOLE"/>
         </Logger>
 
-        <Logger name="com.alibaba.nacos.client.naming" level="${sys:com.alibaba.nacos.naming.log.level:-info}"
+        <Logger name="com.alibaba.nacos.client.naming" level="${sys:com.alibaba.nacos.naming.log.level:-debug}"
             additivity="false">
             <AppenderRef ref="NAMING_LOG_FILE"/>
-            <appender-ref ref="CONSOLE"/>
+            <AppenderRef ref="CONSOLE"/>
         </Logger>
-        <Root level="INFO">
+        <Root level="DEBUG">
             <AppenderRef ref="CONFIG_LOG_FILE"/>
-            <appender-ref ref="CONSOLE"/>
+            <AppenderRef ref="CONSOLE"/>
         </Root>
     </Loggers>
 </Configuration>

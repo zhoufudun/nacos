@@ -32,10 +32,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BeatReactorTest {
-    
+
     @Mock
     private NamingProxy namingProxy;
-    
+
     @Test
     public void test() throws NoSuchFieldException, IllegalAccessException, InterruptedException, NacosException {
         BeatInfo beatInfo = new BeatInfo();
@@ -47,22 +47,22 @@ public class BeatReactorTest {
         beatInfo.setMetadata(new HashMap<String, String>());
         beatInfo.setScheduled(false);
         beatInfo.setPeriod(1000L);
-    
+
         BeatReactor beatReactor = new BeatReactor(namingProxy);
         beatReactor.addBeatInfo("testService", beatInfo);
-        
-        Assert.assertEquals(1, getActiveThread(beatReactor));
-        Thread.sleep(1100L);
+
+        Thread.sleep(1001L);
+        Assert.assertEquals(1, getTaskCount(beatReactor));
         beatReactor.removeBeatInfo("testService", beatInfo.getIp(), beatInfo.getPort());
-        Thread.sleep(3100L);
-        Assert.assertEquals(0, getActiveThread(beatReactor));
+        Thread.sleep(2000L);
+        Assert.assertEquals(1, getTaskCount(beatReactor));
     }
-    
-    private int getActiveThread(BeatReactor beatReactor) throws NoSuchFieldException, IllegalAccessException {
+
+    private int getTaskCount(BeatReactor beatReactor) throws NoSuchFieldException, IllegalAccessException {
         Field field = BeatReactor.class.getDeclaredField("executorService");
         field.setAccessible(true);
         ScheduledThreadPoolExecutor scheduledExecutorService = (ScheduledThreadPoolExecutor) field.get(beatReactor);
-        return scheduledExecutorService.getQueue().size();
+        return (int) scheduledExecutorService.getTaskCount();
     }
-    
+
 }

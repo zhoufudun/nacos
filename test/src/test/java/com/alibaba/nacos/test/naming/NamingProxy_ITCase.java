@@ -15,12 +15,14 @@
  */
 package com.alibaba.nacos.test.naming;
 
+import com.alibaba.nacos.Nacos;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.naming.NamingApp;
+import com.alibaba.nacos.naming.cluster.transport.JacksonSerializer;
 import com.alibaba.nacos.naming.cluster.transport.Serializer;
 import com.alibaba.nacos.naming.consistency.Datum;
 import com.alibaba.nacos.naming.consistency.KeyBuilder;
@@ -28,6 +30,7 @@ import com.alibaba.nacos.naming.consistency.ephemeral.distro.DataStore;
 import com.alibaba.nacos.naming.core.Instance;
 import com.alibaba.nacos.naming.core.Instances;
 import com.alibaba.nacos.naming.misc.NamingProxy;
+import com.alibaba.nacos.test.core.JacksonUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +46,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * read
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NamingApp.class, properties = {"server.servlet.context-path=/nacos"},
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -61,7 +67,7 @@ public class NamingProxy_ITCase {
     public void init() throws NacosException {
         Properties properties = new Properties();
         properties.put(PropertyKeyConst.NAMESPACE, namespaceId);
-        properties.put(PropertyKeyConst.SERVER_ADDR, "localhost:" + port);
+        properties.put(PropertyKeyConst.SERVER_ADDR, "localhost:" + 8848);
         namingService = NamingFactory.createNamingService(properties);
     }
 

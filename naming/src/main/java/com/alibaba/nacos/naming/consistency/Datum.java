@@ -22,20 +22,20 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Naming data.
+ * Naming data.  read
  *
  * @author nacos
  */
 public class Datum<T extends Record> implements Serializable {
-    
+
     private static final long serialVersionUID = -2525482315889753720L;
-    
+
     public String key;
-    
+
     public T value;
-    
+
     public AtomicLong timestamp = new AtomicLong(0L);
-    
+
     /**
      * Create datum.
      *

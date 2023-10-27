@@ -46,16 +46,16 @@ import java.util.Map;
  * @see HttpClientResponse
  */
 public class NacosRestTemplate extends AbstractNacosRestTemplate {
-    
-    private final HttpClientRequest requestClient;
-    
+
+    private final HttpClientRequest requestClient; // com.alibaba.nacos.common.http.client.request.JdkHttpClientRequest@3c9bfddc
+
     private final List<HttpClientRequestInterceptor> interceptors = new ArrayList<HttpClientRequestInterceptor>();
-    
+
     public NacosRestTemplate(Logger logger, HttpClientRequest requestClient) {
         super(logger);
         this.requestClient = requestClient;
     }
-    
+
     /**
      * http get URL request params are expanded using the given query {@link Query}.
      *
@@ -71,7 +71,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
     public <T> HttpRestResult<T> get(String url, Header header, Query query, Type responseType) throws Exception {
         return execute(url, HttpMethod.GET, new RequestHttpEntity(header, query), responseType);
     }
-    
+
     /**
      * http get URL request params are expanded using the given query {@link Query}.
      *
@@ -92,7 +92,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
         RequestHttpEntity requestHttpEntity = new RequestHttpEntity(config, header, query);
         return execute(url, HttpMethod.GET, requestHttpEntity, responseType);
     }
-    
+
     /**
      * get request, may be pulling a lot of data URL request params are expanded using the given query {@link Query},
      * More request parameters can be set via body.
@@ -114,7 +114,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             throws Exception {
         return execute(url, HttpMethod.GET_LARGE, new RequestHttpEntity(header, query, body), responseType);
     }
-    
+
     /**
      * http delete URL request params are expanded using the given query {@link Query}.
      *
@@ -130,7 +130,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
     public <T> HttpRestResult<T> delete(String url, Header header, Query query, Type responseType) throws Exception {
         return execute(url, HttpMethod.DELETE, new RequestHttpEntity(header, query), responseType);
     }
-    
+
     /**
      * http delete URL request params are expanded using the given query {@link Query}.
      *
@@ -150,7 +150,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             Type responseType) throws Exception {
         return execute(url, HttpMethod.DELETE, new RequestHttpEntity(config, header, query), responseType);
     }
-    
+
     /**
      * http put Create a new resource by PUTting the given body to http request.
      *
@@ -170,7 +170,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             throws Exception {
         return execute(url, HttpMethod.PUT, new RequestHttpEntity(header, query, body), responseType);
     }
-    
+
     /**
      * http put json Create a new resource by PUTting the given body to http request, http header contentType default
      * 'application/json;charset=UTF-8'.
@@ -193,7 +193,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 query, body);
         return execute(url, HttpMethod.PUT, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http put json Create a new resource by PUTting the given body to http request, http header contentType default
      * 'application/json;charset=UTF-8'.
@@ -212,7 +212,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 body);
         return execute(url, HttpMethod.PUT, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http put from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -235,7 +235,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), query, bodyValues);
         return execute(url, HttpMethod.PUT, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http put from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -255,7 +255,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), bodyValues);
         return execute(url, HttpMethod.PUT, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http put from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -278,7 +278,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), bodyValues);
         return execute(url, HttpMethod.PUT, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http post Create a new resource by POSTing the given object to the http request.
      *
@@ -298,7 +298,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             throws Exception {
         return execute(url, HttpMethod.POST, new RequestHttpEntity(header, query, body), responseType);
     }
-    
+
     /**
      * http post json Create a new resource by POSTing the given object to the http request, http header contentType
      * default 'application/json;charset=UTF-8'.
@@ -321,7 +321,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 query, body);
         return execute(url, HttpMethod.POST, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http post json Create a new resource by POSTing the given object to the http request, http header contentType
      * default 'application/json;charset=UTF-8'.
@@ -340,7 +340,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 body);
         return execute(url, HttpMethod.POST, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http post from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -363,7 +363,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), query, bodyValues);
         return execute(url, HttpMethod.POST, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http post from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -383,7 +383,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), bodyValues);
         return execute(url, HttpMethod.POST, requestHttpEntity, responseType);
     }
-    
+
     /**
      * http post from Create a new resource by PUTting the given map {@code bodyValues} to http request, http header
      * contentType default 'application/x-www-form-urlencoded;charset=utf-8'.
@@ -406,7 +406,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), bodyValues);
         return execute(url, HttpMethod.POST, requestHttpEntity, responseType);
     }
-    
+
     /**
      * Execute the HTTP method to the given URI template, writing the given request entity to the request, and returns
      * the response as {@link HttpRestResult}.
@@ -426,7 +426,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
                 header.setContentType(MediaType.APPLICATION_FORM_URLENCODED), query, bodyValues);
         return execute(url, httpMethod, requestHttpEntity, responseType);
     }
-    
+
     /**
      * Execute the HTTP method to the given URI template, writing the given request entity to the request, and returns
      * the response as {@link HttpRestResult}.
@@ -446,7 +446,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
         RequestHttpEntity requestHttpEntity = new RequestHttpEntity(config, header, query, body);
         return execute(url, httpMethod, requestHttpEntity, responseType);
     }
-    
+
     /**
      * Set the request interceptors that this accessor should use.
      *
@@ -458,7 +458,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             this.interceptors.addAll(interceptors);
         }
     }
-    
+
     /**
      * Return the request interceptors that this accessor uses.
      *
@@ -467,16 +467,16 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
     public List<HttpClientRequestInterceptor> getInterceptors() {
         return interceptors;
     }
-    
+
     @SuppressWarnings("unchecked")
     private <T> HttpRestResult<T> execute(String url, String httpMethod, RequestHttpEntity requestEntity,
             Type responseType) throws Exception {
-        URI uri = HttpUtils.buildUri(url, requestEntity.getQuery());
+        URI uri = HttpUtils.buildUri(url, requestEntity.getQuery()); // http://127.0.0.1:8848/nacos/v1/ns/instance?app=unknown&metadata=%7B%22netType%22%3A%22external%22%2C%22version%22%3A%222.0%22%7D&ip=1.1.1.1&weight=2.0&ephemeral=true&serviceName=DEFAULT_GROUP%40%40nacos.test.1&accessToken=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYWNvcyIsImV4cCI6MTY5NzcwNzQ0Nn0.9DZVQI0keewX8RwVddbSzQ7FhbYBQ_0wxCSE8DWiKO4&groupName=DEFAULT_GROUP&namespaceId=public&port=800&enable=true&healthy=true&
         if (logger.isDebugEnabled()) {
             logger.debug("HTTP method: {}, url: {}, body: {}", httpMethod, uri, requestEntity.getBody());
         }
-        
-        ResponseHandler<T> responseHandler = super.selectResponseHandler(responseType);
+
+        ResponseHandler<T> responseHandler = super.selectResponseHandler(responseType); // 根据应答数据类型，选择应答处理器
         HttpClientResponse response = null;
         try {
             response = this.requestClient().execute(uri, httpMethod, requestEntity);
@@ -487,7 +487,7 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             }
         }
     }
-    
+
     private HttpClientRequest requestClient() {
         if (CollectionUtils.isNotEmpty(interceptors)) {
             if (logger.isDebugEnabled()) {
@@ -495,14 +495,14 @@ public class NacosRestTemplate extends AbstractNacosRestTemplate {
             }
             return new InterceptingHttpClientRequest(requestClient, interceptors.iterator());
         }
-        return requestClient;
+        return requestClient; //
     }
-    
+
     /**
      * close request client.
      */
     public void close() throws Exception {
         requestClient.close();
     }
-    
+
 }

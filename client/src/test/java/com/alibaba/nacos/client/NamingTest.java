@@ -19,7 +19,11 @@ package com.alibaba.nacos.client;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.client.utils.LogUtils;
 import com.alibaba.nacos.common.utils.ThreadUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,37 +35,46 @@ import java.util.Properties;
 
 @Ignore
 public class NamingTest {
-    
+
     @Test
     public void testServiceList() throws Exception {
-        
+
         Properties properties = new Properties();
         properties.put(PropertyKeyConst.SERVER_ADDR, "127.0.0.1:8848");
         properties.put(PropertyKeyConst.USERNAME, "nacos");
         properties.put(PropertyKeyConst.PASSWORD, "nacos");
-        
+
         Instance instance = new Instance();
         instance.setIp("1.1.1.1");
         instance.setPort(800);
         instance.setWeight(2);
+        instance.setServiceName("zhoufuduntest");
         Map<String, String> map = new HashMap<String, String>();
         map.put("netType", "external");
         map.put("version", "2.0");
         instance.setMetadata(map);
-    
+
         NamingService namingService = NacosFactory.createNamingService(properties);
-        namingService.registerInstance("nacos.test.1", instance);
-        
+        namingService.subscribe("zhoufuduntest", new EventListener() {
+            @Override
+            public void onEvent(Event event) {
+                NamingEvent namingEvent = (NamingEvent) event;
+                List<Instance> instances = namingEvent.getInstances();
+                System.out.println("receives="+instances);
+            }
+        });
+        namingService.registerInstance(instance.getServiceName(),instance);
+
         ThreadUtils.sleep(5000L);
-        
-        List<Instance> list = namingService.getAllInstances("nacos.test.1");
-        
-        System.out.println(list);
-        
-        ThreadUtils.sleep(30000L);
+
+        List<Instance> list = namingService.getAllInstances(instance.getServiceName());
+
+        System.out.println("list="+list);
+
+        ThreadUtils.sleep(10000L);
         //        ExpressionSelector expressionSelector = new ExpressionSelector();
         //        expressionSelector.setExpression("INSTANCE.metadata.registerSource = 'dubbo'");
         //        ListView<String> serviceList = namingService.getServicesOfServer(1, 10, expressionSelector);
-        
+
     }
 }

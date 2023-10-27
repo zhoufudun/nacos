@@ -49,18 +49,18 @@ import static com.alibaba.nacos.test.naming.NamingBase.randomDomainName;
  * @author liaochuntao
  * @date 2019-05-07 10:13
  **/
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
+//        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class NamingMaintainService_ITCase extends BaseTest {
 
-    private NamingMaintainService namingMaintainService;
-    private NamingService namingService;
+    private NamingMaintainService namingMaintainService; // namingMaintainService作用：更新、查询、创建、删除: 等维护服务的
+    private NamingService namingService;  // namingService 作用：注册和解除注册、获取和选择
     private Instance instance;
     private String serviceName;
 
     @LocalServerPort
-    private int port;
+    private int port = 8848;
 
     @Before
     public void init() throws Exception {
@@ -97,7 +97,7 @@ public class NamingMaintainService_ITCase extends BaseTest {
         map.put("netType", "external-update");
         map.put("version", "2.0");
         namingService.registerInstance(serviceName, instance);
-        instance.setMetadata(map);
+        instance.setMetadata(map); // 元数据实际上服务端会存在：extendDatum
         namingMaintainService.updateInstance(serviceName, instance);
         List<Instance> instances = namingService.getAllInstances(serviceName, true);
 
@@ -116,7 +116,7 @@ public class NamingMaintainService_ITCase extends BaseTest {
         namingMaintainService.updateInstance(serviceName, instance);
         List<Instance> instances = namingService.getAllInstances(serviceName, true);
 
-        Assert.assertEquals(instances.size(), 0);
+        Assert.assertEquals(instances.size(), 0); // instance.setEnabled(false); 所以服务器在处理获取实例时，本instance会被过滤掉
     }
 
     @Test
@@ -130,13 +130,13 @@ public class NamingMaintainService_ITCase extends BaseTest {
         Map<String, String> metadata = new HashMap<String, String>();
         metadata.put(serviceName, "this is a register metadata");
         preService.setMetadata(metadata);
-        ExpressionSelector selector = new ExpressionSelector();
+        ExpressionSelector selector = new ExpressionSelector(); // 什么作用？？
         selector.setExpression("CONSUMER.label.A=PROVIDER.label.A &CONSUMER.label.B=PROVIDER.label.B");
 
         System.out.println("service info : " + preService);
         namingMaintainService.createService(preService, selector);
         Service remoteService = namingMaintainService.queryService(serviceName);
-        System.out.println("remote service info : " + remoteService);
+        System.out.println("remote service info : " + remoteService); // Service{name='1215906004H0NN1@qqTKHL9@qqcom', protectThreshold=1.0, appName='null', groupName='DEFAULT_GROUP', metadata={1215906004H0NN1@qqTKHL9@qqcom=this is a register metadata}}
         Assert.assertEquals(preService.toString(), remoteService.toString());
 
         // update service
@@ -164,7 +164,7 @@ public class NamingMaintainService_ITCase extends BaseTest {
 
         Assert.assertTrue(namingMaintainService.deleteService(serviceName));
     }
-    
+
     @After
     public void tearDown() throws NacosException {
         namingMaintainService.shutDown();
