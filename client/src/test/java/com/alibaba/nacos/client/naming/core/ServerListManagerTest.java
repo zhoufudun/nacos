@@ -32,6 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
 
+/**
+ * read
+ */
 public class ServerListManagerTest {
     
     @Test
@@ -62,7 +65,7 @@ public class ServerListManagerTest {
         nacosRestTemplate.setAccessible(true);
         nacosRestTemplate.set(serverListManager, mock);
         TimeUnit.SECONDS.sleep(31);
-        final List<String> serverList = serverListManager.getServerList();
+        final List<String> serverList = serverListManager.getServerList(); // 127.0.0.1:8848
         Assert.assertEquals(1, serverList.size());
         Assert.assertEquals("127.0.0.1:8848", serverList.get(0));
     }

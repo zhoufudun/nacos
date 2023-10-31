@@ -67,7 +67,7 @@ public class ServiceInfoUpdateService implements Closeable {
             NamingClientProxy namingClientProxy, InstancesChangeNotifier changeNotifier) {
         this.asyncQuerySubscribeService = isAsyncQueryForSubscribeService(properties);
         this.executor = new ScheduledThreadPoolExecutor(initPollingThreadCount(properties),
-                new NameThreadFactory("com.alibaba.nacos.client.naming.updater"));
+                new NameThreadFactory("com.alibaba.nacos.client.naming.updater"));  // 定时向服务器获取最新的服务实例列表
         this.serviceInfoHolder = serviceInfoHolder;
         this.namingClientProxy = namingClientProxy;
         this.changeNotifier = changeNotifier;

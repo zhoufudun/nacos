@@ -36,11 +36,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+/**
+ * read
+ */
 public class PushReceiverTest {
-    /**
-     * read
-     */
+
     @Test
     public void testTestRunDomAndService() throws InterruptedException, IOException {
         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
@@ -58,7 +58,7 @@ public class PushReceiverTest {
         pack1.type = "dom";
         pack1.data = "pack1";
         pack1.lastRefTime = 1;
-        final String res1 = udpClientRun(pack1, pushReceiver);
+        final String res1 = udpClientRun(pack1, pushReceiver); // {"type": "push-ack", "lastRefTime":"1", "data":""}
         Assert.assertEquals("{\"type\": \"push-ack\", \"lastRefTime\":\"1\", \"data\":\"\"}", res1);
         verify(holder, times(1)).processServiceInfo(pack1.data);
         
@@ -73,16 +73,16 @@ public class PushReceiverTest {
     }
     
     private String udpClientRun(PushReceiver.PushPacket pack, PushReceiver pushReceiver) throws IOException {
-        final int udpPort = pushReceiver.getUdpPort();
-        String json = JacksonUtils.toJson(pack);
+        final int udpPort = pushReceiver.getUdpPort(); // udp接收客户端的端口
+        String json = JacksonUtils.toJson(pack); // {"type":"dom","lastRefTime":1,"data":"pack1"}
         final byte[] bytes = IoUtils.tryCompress(json, "UTF-8");
         final DatagramSocket datagramSocket = new DatagramSocket();
-        datagramSocket.send(new DatagramPacket(bytes, bytes.length, InetAddress.getByName("localhost"), udpPort));
+        datagramSocket.send(new DatagramPacket(bytes, bytes.length, InetAddress.getByName("localhost"), udpPort)); // udp协议发送给 localhost:udpPort
         byte[] buffer = new byte[20480];
         final DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
-        datagramSocket.receive(datagramPacket);
+        datagramSocket.receive(datagramPacket); // 接收udp客户端回复的消息：
         final byte[] data = datagramPacket.getData();
-        String res = new String(data, StandardCharsets.UTF_8);
+        String res = new String(data, StandardCharsets.UTF_8); // {"type": "push-ack", "lastRefTime":"1", "data":""}
         return res.trim();
     }
     

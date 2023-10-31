@@ -93,10 +93,10 @@ public class ServerListManager implements ServerListFactory, Closeable {
         }
     }
     
-    private void initServerAddr(Properties properties) {
+    private void initServerAddr(Properties properties) { // 127.0.0.1:8080
         this.endpoint = InitUtils.initEndpoint(properties);
         if (StringUtils.isNotEmpty(endpoint)) {
-            this.serversFromEndpoint = getServerListFromEndpoint();
+            this.serversFromEndpoint = getServerListFromEndpoint(); // 获取nacos服务器列表
             refreshServerListExecutor = new ScheduledThreadPoolExecutor(1,
                     new NameThreadFactory("com.alibaba.nacos.client.naming.server.list.refresher"));
             refreshServerListExecutor
@@ -105,7 +105,7 @@ public class ServerListManager implements ServerListFactory, Closeable {
         } else {
             String serverListFromProps = properties.getProperty(PropertyKeyConst.SERVER_ADDR); // 127.0.0.1:8848
             if (StringUtils.isNotEmpty(serverListFromProps)) {
-                this.serverList.addAll(Arrays.asList(serverListFromProps.split(",")));
+                this.serverList.addAll(Arrays.asList(serverListFromProps.split(","))); // [127.0.0.1:8848, 127.0.0.1:8849]
                 if (this.serverList.size() == 1) {
                     this.nacosDomain = serverListFromProps; // 如果服务端只有一个节点，那么这个节点就是主节点
                 }
@@ -115,7 +115,7 @@ public class ServerListManager implements ServerListFactory, Closeable {
     
     private List<String> getServerListFromEndpoint() {
         try {
-            String urlString = HTTP_PREFIX + endpoint + "/nacos/serverlist";
+            String urlString = HTTP_PREFIX + endpoint + "/nacos/serverlist"; // 获取nacos服务器列表
             Header header = NamingHttpUtil.builderHeader();
             Query query = StringUtils.isNotBlank(namespace)
                     ? Query.newInstance().addParam("namespace", namespace)
@@ -148,7 +148,7 @@ public class ServerListManager implements ServerListFactory, Closeable {
             if (System.currentTimeMillis() - lastServerListRefreshTime < refreshServerListInternal) {
                 return;
             }
-            List<String> list = getServerListFromEndpoint();
+            List<String> list = getServerListFromEndpoint(); // 定时从指定地址获取nacos服务器列表
             if (CollectionUtils.isEmpty(list)) {
                 throw new Exception("Can not acquire Nacos list");
             }

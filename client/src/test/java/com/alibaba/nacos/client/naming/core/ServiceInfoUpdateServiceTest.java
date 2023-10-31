@@ -27,6 +27,9 @@ import org.mockito.Mockito;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * read
+ */
 public class ServiceInfoUpdateServiceTest {
     
     @Test
