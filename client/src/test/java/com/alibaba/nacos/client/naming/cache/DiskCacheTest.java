@@ -31,6 +31,9 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * read
+ */
 public class DiskCacheTest {
     
     private static final String CACHE_DIR = DiskCacheTest.class.getResource("/").getPath() + "cache/";

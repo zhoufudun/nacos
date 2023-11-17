@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * read
+ */
 public class ServiceInfoHolderTest {
     
     @Test

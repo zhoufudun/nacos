@@ -95,11 +95,9 @@ public class ConcurrentDiskUtil {
         } finally {
             if (rlock != null) {
                 rlock.release();
-                rlock = null;
             }
             if (fis != null) {
                 IoUtils.closeQuietly(fis);
-                fis = null;
             }
         }
     }
@@ -141,7 +139,7 @@ public class ConcurrentDiskUtil {
             int i = 0;
             do {
                 try {
-                    lock = channel.tryLock();
+                    lock = channel.tryLock(); // 磁盘文件加锁
                 } catch (Exception e) {
                     ++i;
                     if (i > RETRY_COUNT) {

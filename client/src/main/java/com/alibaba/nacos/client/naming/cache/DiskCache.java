@@ -55,7 +55,7 @@ public class DiskCache {
         try {
             makeSureCacheDirExists(dir);
             
-            File file = new File(dir, dom.getKeyEncoded());
+            File file = new File(dir, dom.getKeyEncoded()); // C:\Users\Administrator\nacos\naming\aa\a%40%40b@@c
             if (!file.exists()) {
                 // add another !file.exists() to avoid conflicted creating-new-file from multi-instances
                 if (!file.createNewFile() && !file.exists()) {
@@ -65,7 +65,7 @@ public class DiskCache {
             
             StringBuilder keyContentBuffer = new StringBuilder();
             
-            String json = dom.getJsonFromServer();
+            String json = dom.getJsonFromServer(); // {"name":"b","groupName":"a","clusters":"c","cacheMillis":1000,"hosts":[{"ip":"1.1.1.1","port":1,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"metadata":{},"instanceIdGenerator":"simple","instanceHeartBeatTimeOut":15000,"ipDeleteTimeout":30000,"instanceHeartBeatInterval":5000},{"ip":"1.1.1.2","port":2,"weight":1.0,"healthy":true,"enabled":true,"ephemeral":true,"metadata":{},"instanceIdGenerator":"simple","instanceHeartBeatTimeOut":15000,"ipDeleteTimeout":30000,"instanceHeartBeatInterval":5000}],"lastRefTime":0,"checksum":"","allIPs":false,"reachProtectionThreshold":false,"valid":true}
             
             if (StringUtils.isEmpty(json)) {
                 json = JacksonUtils.toJson(dom);
@@ -164,7 +164,7 @@ public class DiskCache {
         return domMap;
     }
     
-    private static File makeSureCacheDirExists(String dir) {
+    private static File makeSureCacheDirExists(String dir) { // C:\Users\Administrator\nacos\naming\aa
         File cacheDir = new File(dir);
         
         if (!cacheDir.exists()) {

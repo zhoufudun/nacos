@@ -290,12 +290,12 @@ public class NotifyCenter {
      * @param eventType class Instances type of the event type.
      * @param event     event instance.
      */
-    private static boolean publishEvent(final Class<? extends Event> eventType, final Event event) {
+    private static boolean publishEvent(final Class<? extends Event> eventType, final Event event) { // event=InstancesChangeEvent
         if (ClassUtils.isAssignableFrom(SlowEvent.class, eventType)) {
             return INSTANCE.sharePublisher.publish(event);
         }
         
-        final String topic = ClassUtils.getCanonicalName(eventType);
+        final String topic = ClassUtils.getCanonicalName(eventType); // com.alibaba.nacos.client.naming.event.InstancesChangeEvent
         
         EventPublisher publisher = INSTANCE.publisherMap.get(topic);
         if (publisher != null) {
