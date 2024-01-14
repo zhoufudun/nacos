@@ -69,6 +69,8 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
     
     /**
      * Identify the information used to determine how many isEmpty judgments the service has experienced.
+     *
+     * 识别用于确定服务经历了多少次isEmpty判断的信息
      */
     private int finalizeCount = 0;
     

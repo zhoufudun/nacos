@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  */
 public class EmptyServiceAutoCleaner extends AbstractNamingCleaner {
     
-    private static final int MAX_FINALIZE_COUNT = 3;
+    private static final int MAX_FINALIZE_COUNT = 3; // 某个服务连续三次判断是空，移除
     
     private final ServiceManager serviceManager;
     
@@ -46,7 +46,7 @@ public class EmptyServiceAutoCleaner extends AbstractNamingCleaner {
     public void run() {
         
         // Parallel flow opening threshold
-        int parallelSize = 100;
+        int parallelSize = 100; // 并行处理阈值
         
         for (String each : serviceManager.getAllNamespaces()) {
             Map<String, Service> serviceMap = serviceManager.chooseServiceMap(each);
@@ -67,11 +67,11 @@ public class EmptyServiceAutoCleaner extends AbstractNamingCleaner {
                     // experiences Empty is determined by finalizeCnt, and if the specified
                     // value is reached, it is removed
                     
-                    if (service.getFinalizeCount() > MAX_FINALIZE_COUNT) {
+                    if (service.getFinalizeCount() > MAX_FINALIZE_COUNT) { // 发现连续三次是空，移除服务
                         Loggers.SRV_LOG
                                 .warn("namespace : {}, [{}] services are automatically cleaned", each, serviceName);
                         try {
-                            serviceManager.easyRemoveService(each, serviceName);
+                            serviceManager.easyRemoveService(each, serviceName); // 指定服务下实例列表是空，移除服务
                         } catch (Exception e) {
                             Loggers.SRV_LOG
                                     .error("namespace : {}, [{}] services are automatically clean has " + "error : {}",

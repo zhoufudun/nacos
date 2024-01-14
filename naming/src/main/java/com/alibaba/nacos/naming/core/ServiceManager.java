@@ -422,7 +422,7 @@ public class ServiceManager implements RecordListener<Service> {
             throw new NacosException(NacosException.INVALID_PARAM,
                     "specified service not exist, serviceName : " + serviceName);
         }
-        
+        // 根据具体实现，从内存，或者文件，或者服务端删除指定namespaceId的执行服务名
         consistencyService.remove(KeyBuilder.buildServiceMetaKey(namespaceId, serviceName));
     }
     

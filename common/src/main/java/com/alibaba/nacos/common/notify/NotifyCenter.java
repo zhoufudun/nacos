@@ -299,7 +299,7 @@ public class NotifyCenter {
         
         EventPublisher publisher = INSTANCE.publisherMap.get(topic);
         if (publisher != null) {
-            return publisher.publish(event);
+            return publisher.publish(event); // 事件加入队列，其他线程从队列获取消费
         }
         if (event.isPluginEvent()) {
             return true;
